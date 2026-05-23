@@ -82,15 +82,6 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path) -> None
             std = s[std_col].fillna(0.0)
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
 
-    # v1.0: line plot across B values
-    if "acc_v1_mean" in s.columns:
-        v1 = s.dropna(subset=["acc_v1_mean"])
-        if not v1.empty:
-            ax.errorbar(v1["N"], v1["acc_v1_mean"],
-                        yerr=v1["acc_v1_std"].fillna(0).values,
-                        marker="*", ms=12, mfc="gold", mec="black", mew=1.0,
-                        color="darkgoldenrod", capsize=3, lw=1.5,
-                        label="v1.0 (B varies)", zorder=10)
     ax.set_xscale("log", base=2)
     n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 1536]
     ax.set_xticks(n_ticks)
@@ -111,9 +102,8 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
                         n_min: int = 64) -> None:
     """Zoomed Plot B — N>=n_min, y-axis tight around top competitive baselines.
 
-    Same series as plot_5_curves, but x-range starts at n_min (where v1.0 enters and
-    curves separate visibly) and y-range auto-fits to {best-T, equal_mix,
-    consensus_vote, v1.0} band ±1pp so close differences are visible.
+    Same series as plot_5_curves, but x-range starts at n_min and y-range auto-fits to
+    {best-T, equal_mix, consensus_vote} band ±1pp so close differences are visible.
     """
     s = sub_strat[sub_strat.N >= n_min].sort_values("N")
     if s.empty:
@@ -128,7 +118,7 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
         ("acc_consensus_vote_mean","consensus_vote","C6", "acc_consensus_vote_std"),
     ]
     # Determine zoom y-range from the TOP competitive baselines only
-    zoom_cols = ["best_t_mean", "acc_equal_mix_mean", "acc_consensus_vote_mean", "acc_v1_mean"]
+    zoom_cols = ["best_t_mean", "acc_equal_mix_mean", "acc_consensus_vote_mean"]
     vals = []
     for c in zoom_cols:
         if c in s.columns:
@@ -149,15 +139,6 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
         if std_col in s.columns:
             std = s[std_col].fillna(0.0)
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
-
-    if "acc_v1_mean" in s.columns:
-        v1 = s.dropna(subset=["acc_v1_mean"])
-        if not v1.empty:
-            ax.errorbar(v1["N"], v1["acc_v1_mean"],
-                        yerr=v1["acc_v1_std"].fillna(0).values,
-                        marker="*", ms=14, mfc="gold", mec="black", mew=1.0,
-                        color="darkgoldenrod", capsize=3, lw=1.5,
-                        label="v1.0 (B varies)", zorder=10)
 
     ax.set_xscale("log", base=2)
     n_ticks = [n for n in [64, 128, 256, 512, 1024, 1536, 2048] if n >= n_min]
@@ -187,7 +168,6 @@ def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path) 
         ("gap_vs_random_t",       "best − random_T",        "C1"),
         ("gap_vs_equal_mix",      "best − equal_mix",       "C4"),
         ("gap_vs_consensus_vote", "best − consensus_vote",  "C6"),
-        ("gap_vs_v1",             "best − v1.0",            "darkgoldenrod"),
     ]
     for col, label, color in gap_defs:
         if col not in s.columns or s[col].isna().all():

@@ -59,26 +59,31 @@ def per_problem_sims_v2(P: np.ndarray, correct_idx: int, other_idx: int,
         # ============ Equal-mix allocation: per-T draws with N/12 per T ============
         alloc = equal_alloc(N, M)
         pool = np.zeros((n_sims, K), dtype=np.int64)
-        per_T_em_winner = np.full((M, n_sims), -1, dtype=np.int32)  # -1 = no samples
+        per_T_em_winner = np.full((M, n_sims), -1, dtype=np.int32)  # -1 = no real-answer winner
         for ti in range(M):
             if alloc[ti] > 0:
                 em_counts = rng.multinomial(alloc[ti], P[ti], size=n_sims)
                 pool += em_counts
-                per_T_em_winner[ti] = em_counts[:, real_slice].argmax(axis=1)
+                # winner over real answers only; mark -1 when all samples fell into "other"
+                em_real = em_counts[:, real_slice]
+                em_winner = em_real.argmax(axis=1)
+                em_winner[em_real.max(axis=1) == 0] = -1
+                per_T_em_winner[ti] = em_winner
 
         # equal_mix: pool counts → plurality MV
         result[N]["equal_mix"] = _share_with_ties(pool[:, real_slice], correct_idx)
 
-        # consensus_vote: per-T winner → plurality vote among non-(-1) winners
-        # Each sim gets up to M winner_idx values (some -1 if alloc was 0).
-        # Plurality among valid winners; tie → uniform share at correct.
-        cv_acc = np.zeros(n_sims, dtype=np.float32)
-        # Build (n_sims, K) consensus counts: for each sim, count how many T's voted each ans
+        # consensus_vote: per-T winner → plurality vote among valid (non-(-1)) winners.
+        # other-only sims for a T contribute 0 votes for that T (matches equal_mix's
+        # behaviour of ignoring "other" counts when picking the pool winner).
         consensus_counts = np.zeros((n_sims, K), dtype=np.int32)
         for ti in range(M):
             if alloc[ti] > 0:
-                # valid winners for this T (all sims have valid winners since alloc>0)
-                np.add.at(consensus_counts, (np.arange(n_sims), per_T_em_winner[ti]), 1)
+                winners = per_T_em_winner[ti]
+                valid_sims = np.where(winners != -1)[0]
+                if valid_sims.size:
+                    np.add.at(consensus_counts,
+                              (valid_sims, winners[valid_sims]), 1)
         cv_acc = _share_with_ties(consensus_counts[:, real_slice], correct_idx)
         result[N]["consensus_vote"] = cv_acc
 
