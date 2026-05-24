@@ -51,7 +51,7 @@ def plot_t_star_trajectory(sub: pd.DataFrame, out_path: Path, show_fixed: bool =
             ft = s["best_fixed_t"].iloc[0]
             ax.axhline(ft, color=STRATUM_COLORS[stratum], ls=":", lw=1.5, alpha=0.6)
     ax.set_xscale("log", base=2)
-    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 1536]
+    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
     ax.set_xticks(n_ticks)
     ax.set_xticklabels(n_ticks, fontsize=8)
     ax.set_xlabel("N (sample budget, log scale)")
@@ -61,7 +61,7 @@ def plot_t_star_trajectory(sub: pd.DataFrame, out_path: Path, show_fixed: bool =
     ax.grid(True, alpha=0.3)
     ax.legend(loc="best", fontsize=8)
     model = sub["model"].iloc[0]; dataset = sub["dataset"].iloc[0]
-    ax.set_title(f"T*(N) trajectory — {model} / {dataset}")
+    ax.set_title("T*(N) trajectory")
     fig.tight_layout()
     fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
@@ -76,8 +76,8 @@ def _5curve_series(include_fixed: bool):
         ("acc_t1p0_mean",        "T=1.0",          "C3",  "acc_t1p0_std"),
         ("acc_t0p1_mean",        "T=0.1",          "C2",  "acc_t0p1_std"),
         ("acc_random_t_mean",    "random_T",       "C1",  "acc_random_t_std"),
-        ("acc_equal_mix_mean",   "equal_mix",      "C4",  "acc_equal_mix_std"),
-        ("acc_consensus_vote_mean","consensus_vote","C6", "acc_consensus_vote_std"),
+        ("acc_equal_mix_mean",   "Temperature Pool",      "C4",  "acc_equal_mix_std"),
+        ("acc_consensus_vote_mean","Temperature Consensus","C6", "acc_consensus_vote_std"),
     ])
     return defs
 
@@ -97,7 +97,7 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
 
     ax.set_xscale("log", base=2)
-    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 1536]
+    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
     ax.set_xticks(n_ticks)
     ax.set_xticklabels(n_ticks, fontsize=8)
     ax.set_xlabel("N")
@@ -105,7 +105,7 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
     ax.grid(True, alpha=0.3)
     ax.legend(loc="lower right", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
-    ax.set_title(f"5-curve compare — {model}/{dataset} [{stratum}]")
+    ax.set_title(f"maj@N — {stratum}")
     fig.tight_layout()
     fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
@@ -143,7 +143,7 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
 
     ax.set_xscale("log", base=2)
-    n_ticks = [n for n in [64, 128, 256, 512, 1024, 1536, 2048] if n >= n_min]
+    n_ticks = [n for n in [64, 128, 256, 512, 1024, 2048] if n >= n_min]
     ax.set_xticks(n_ticks)
     ax.set_xticklabels(n_ticks, fontsize=8)
     ax.set_xlabel(f"N (zoom: N≥{n_min})")
@@ -152,7 +152,7 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
     ax.grid(True, alpha=0.3)
     ax.legend(loc="best", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
-    ax.set_title(f"5-curve compare ZOOM N≥{n_min} — {model}/{dataset} [{stratum}]")
+    ax.set_title(f"ZOOM N≥{n_min} — {stratum}")
     fig.tight_layout()
     fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
@@ -166,8 +166,8 @@ def _gap_defs(use_fixed: bool):
         (f"{prefix}t1p0",           f"{label_src} − T=1.0",           "C3"),
         (f"{prefix}t0p1",           f"{label_src} − T=0.1",           "C2"),
         (f"{prefix}random_t",       f"{label_src} − random_T",        "C1"),
-        (f"{prefix}equal_mix",      f"{label_src} − equal_mix",       "C4"),
-        (f"{prefix}consensus_vote", f"{label_src} − consensus_vote",  "C6"),
+        (f"{prefix}equal_mix",      f"{label_src} − Temperature Pool",       "C4"),
+        (f"{prefix}consensus_vote", f"{label_src} − Temperature Consensus",  "C6"),
     ]
 
 
@@ -183,7 +183,7 @@ def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
         ax.plot(s["N"], s[col] * 100, marker="o", color=color, label=label, lw=1.8)
     ax.axhline(0, color="k", lw=0.5, alpha=0.5)
     ax.set_xscale("log", base=2)
-    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 1536]
+    n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
     ax.set_xticks(n_ticks)
     ax.set_xticklabels(n_ticks, fontsize=8)
     ax.set_xlabel("N")
@@ -192,7 +192,7 @@ def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
     ax.legend(loc="best", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
     title_src = "best-fixed-T" if use_fixed else "best-T"
-    ax.set_title(f"{title_src} gap vs baselines — {model}/{dataset} [{stratum}]")
+    ax.set_title(f"{title_src} gap vs baselines — {stratum}")
     fig.tight_layout()
     fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)

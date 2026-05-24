@@ -16,16 +16,16 @@ DEFAULT_CSV = Path("/home3/b.ms/projects/tts_analysis/outputs/n_vs_best_t/alloc_
 DEFAULT_OUT = Path("/home3/b.ms/projects/tts_analysis/outputs/n_vs_best_t/alloc_compare")
 
 EM_DEFS = [
-    ("em_lowfirst",  "equal_mix low-T first (original)",  "C4", "-"),
-    ("em_highfirst", "equal_mix high-T first",            "C3", "-"),
-    ("em_random",    "equal_mix random rotation",         "C2", "-"),
-    ("em_floor",     "equal_mix floor (N//12 ×12)",       "C1", "-"),
+    ("em_lowfirst",  "Temperature Pool low-T first (original)",  "C4", "-"),
+    ("em_highfirst", "Temperature Pool high-T first",            "C3", "-"),
+    ("em_random",    "Temperature Pool random rotation",         "C2", "-"),
+    ("em_floor",     "Temperature Pool floor (N//12 ×12)",       "C1", "-"),
 ]
 CV_DEFS = [
-    ("cv_lowfirst",  "consensus_vote low-T first",        "C4", ":"),
-    ("cv_highfirst", "consensus_vote high-T first",       "C3", ":"),
-    ("cv_random",    "consensus_vote random rotation",    "C2", ":"),
-    ("cv_floor",     "consensus_vote floor",              "C1", ":"),
+    ("cv_lowfirst",  "Temperature Consensus low-T first",        "C4", ":"),
+    ("cv_highfirst", "Temperature Consensus high-T first",       "C3", ":"),
+    ("cv_random",    "Temperature Consensus random rotation",    "C2", ":"),
+    ("cv_floor",     "Temperature Consensus floor",              "C1", ":"),
 ]
 T1_DEF = ("T1.0", "T=1.0 baseline", "black", "--")
 STRATA = ["overall", "L1", "L2", "L3", "L4", "L5", "Lr"]
@@ -76,11 +76,11 @@ def plot_strata(df: pd.DataFrame, out_dir: Path, combo: str) -> None:
         # Top-left: em variants raw
         _plot_one(axes[0, 0], sub, EM_DEFS, include_t1=True, stratum=stratum,
                   n_prob=n_prob, ylabel="maj@N accuracy",
-                  title_suffix=f"equal_mix variants — {combo}")
+                  title_suffix=f"Temperature Pool variants — {combo}")
         # Bottom-left: cv variants raw
         _plot_one(axes[1, 0], sub, CV_DEFS, include_t1=True, stratum=stratum,
                   n_prob=n_prob, ylabel="maj@N accuracy",
-                  title_suffix=f"consensus_vote variants — {combo}")
+                  title_suffix=f"Temperature Consensus variants — {combo}")
 
         # Right: gap vs T=1.0 (top em, bottom cv)
         t1 = sub[sub.strategy == "T1.0"].set_index("N")["mean"]
@@ -101,7 +101,7 @@ def plot_strata(df: pd.DataFrame, out_dir: Path, combo: str) -> None:
             ax2.set_ylabel("ΔAcc vs T=1.0 (pp)")
             ax2.grid(True, alpha=0.3)
             ax2.legend(fontsize=7, loc="best")
-            prefix = "equal_mix" if ax_idx == 0 else "consensus_vote"
+            prefix = "Temperature Pool" if ax_idx == 0 else "Temperature Consensus"
             ax2.set_title(f"{prefix} gap vs T=1.0 [{stratum}]")
 
         fig.suptitle(f"alloc compare 4 variants × 2 agg — {combo} [{stratum}]",  # stratum only, no n_prob

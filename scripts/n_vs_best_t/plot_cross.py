@@ -93,9 +93,9 @@ def plot_grid_trajectories(bt: pd.DataFrame, stratum: str, out_path: Path,
     first_label = "best-fixed-T" if include_fixed else "best-T"
     handles = [plt.Line2D([], [], color=c, marker=".", label=lab) for lab, c in
                [(first_label, "C0"), ("T=1.0", "C3"), ("T=0.1", "C2"),
-                ("random_T", "C1"), ("equal_mix", "C4")]]
+                ("random_T", "C1"), ("Temperature Pool", "C4")]]
     fig.legend(handles=handles, ncol=5, loc="lower center", bbox_to_anchor=(0.5, -0.02))
-    fig.suptitle(f"5-curve compare grid — stratum={stratum}", y=1.0)
+    fig.suptitle(f"maj@N grid —stratum={stratum}", y=1.0)
     fig.tight_layout()
     fig.savefig(out_path, dpi=FIG_DPI, bbox_inches="tight")
     plt.close(fig)
@@ -129,8 +129,8 @@ def plot_win_margin_scatter(bt: pd.DataFrame, out_path: Path) -> None:
     lim = max(lim, 1) * 1.1
     ax.plot([-lim, lim], [-lim, lim], "--", color="gray", lw=0.7)
     ax.axhline(0, color="k", lw=0.5); ax.axvline(0, color="k", lw=0.5)
-    ax.set_xlabel("best − equal_mix @ N=16 (pp)")
-    ax.set_ylabel("best − equal_mix @ N=256 (pp)")
+    ax.set_xlabel("best − Temperature Pool @ N=16 (pp)")
+    ax.set_ylabel("best − Temperature Pool @ N=256 (pp)")
     ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
     ax.set_title("best-T win margin: N=16 vs N=256")
     ax.legend()
