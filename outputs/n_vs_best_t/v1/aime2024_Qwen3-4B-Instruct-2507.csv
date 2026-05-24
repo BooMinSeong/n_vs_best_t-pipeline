@@ -1,0 +1,7 @@
+combo,N,stratum,mean,std6,n_pids
+aime2024_Qwen3-4B-Instruct-2507,256,L1,1.0,0.0,4
+aime2024_Qwen3-4B-Instruct-2507,256,L2,1.0,0.0,3
+aime2024_Qwen3-4B-Instruct-2507,256,L3,1.0,0.0,4
+aime2024_Qwen3-4B-Instruct-2507,256,L4,0.5010416638106108,0.021800471720368413,2
+aime2024_Qwen3-4B-Instruct-2507,256,L5,0.0,0.0,11
+aime2024_Qwen3-4B-Instruct-2507,256,overall,0.5000868053175509,0.006293254108107763,24

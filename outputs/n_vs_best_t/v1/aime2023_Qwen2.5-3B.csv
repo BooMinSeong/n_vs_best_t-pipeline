@@ -1,0 +1,7 @@
+combo,N,stratum,mean,std6,n_pids
+aime2023_Qwen2.5-3B,256,L1,1.0,0.0,2
+aime2023_Qwen2.5-3B,256,L2,,,0
+aime2023_Qwen2.5-3B,256,L3,,,0
+aime2023_Qwen2.5-3B,256,L4,,,0
+aime2023_Qwen2.5-3B,256,L5,0.0,0.0,9
+aime2023_Qwen2.5-3B,256,overall,0.18181818181818182,0.0,11

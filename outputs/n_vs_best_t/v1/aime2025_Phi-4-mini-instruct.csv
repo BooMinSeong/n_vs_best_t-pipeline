@@ -1,0 +1,7 @@
+combo,N,stratum,mean,std6,n_pids
+aime2025_Phi-4-mini-instruct,256,L1,,,0
+aime2025_Phi-4-mini-instruct,256,L2,,,0
+aime2025_Phi-4-mini-instruct,256,L3,,,0
+aime2025_Phi-4-mini-instruct,256,L4,,,0
+aime2025_Phi-4-mini-instruct,256,L5,0.0,0.0,17
+aime2025_Phi-4-mini-instruct,256,overall,0.0,0.0,17

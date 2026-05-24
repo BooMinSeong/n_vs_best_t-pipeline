@@ -1,0 +1,7 @@
+combo,N,stratum,mean,std6,n_pids
+aime2023_Phi-4-mini-instruct,256,L1,1.0,0.0,1
+aime2023_Phi-4-mini-instruct,256,L2,0.8958333233992258,0.03679901035859996,1
+aime2023_Phi-4-mini-instruct,256,L3,,,0
+aime2023_Phi-4-mini-instruct,256,L4,,,0
+aime2023_Phi-4-mini-instruct,256,L5,0.021249999850988386,0.01045825047415832,10
+aime2023_Phi-4-mini-instruct,256,overall,0.1756944434924258,0.014282615286817148,12
