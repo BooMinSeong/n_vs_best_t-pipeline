@@ -2,6 +2,8 @@
 - A: T*(N) trajectory (6 lines: overall + L1..L5)
 - B: 5-curve comparison (best-T, T=1.0, T=0.1, random_T, equal_mix)
 - C: gap vs baseline (best - baseline for each of 4 baselines)
+
+Two versions: _with_fixed (includes best_fixed_t) and _no_fixed (without it).
 """
 
 from __future__ import annotations
@@ -24,25 +26,30 @@ STRATUM_COLORS = {
     "Lr": "#9467bd",  # recoverable (purple)
 }
 
+FIG_DPI = 200
 
-def plot_t_star_trajectory(sub: pd.DataFrame, out_path: Path) -> None:
-    fig, ax = plt.subplots(figsize=(7, 5))
+
+def plot_t_star_trajectory(sub: pd.DataFrame, out_path: Path, show_fixed: bool = False) -> None:
+    fig, ax = plt.subplots(figsize=(10, 7))
     for stratum in STRATA:
         s = sub[sub.stratum == stratum].sort_values("N")
         if s.empty:
             continue
-        # mark sparse (n_problems < 5) with dashed
         n_prob = int(s["level_n_problems"].iloc[0])
         lw = 2.0
         ls = "--" if n_prob < 5 else "-"
         alpha = 0.5 if n_prob < 5 else 1.0
         ax.plot(s["N"], s["t_star"], marker="o", ls=ls, lw=lw,
                 color=STRATUM_COLORS[stratum], alpha=alpha,
-                label=f"{stratum} (n={n_prob})")
-        # CI band (optional — may not exist after sim-only re-merge)
+                label=stratum)
+        # CI band
         if "t_star_ci_low" in s.columns and not s["t_star_ci_low"].isna().all():
             ax.fill_between(s["N"], s["t_star_ci_low"], s["t_star_ci_high"],
                             color=STRATUM_COLORS[stratum], alpha=0.1)
+        # best_fixed_t horizontal line
+        if show_fixed and "best_fixed_t" in s.columns and not s["best_fixed_t"].isna().all():
+            ft = s["best_fixed_t"].iloc[0]
+            ax.axhline(ft, color=STRATUM_COLORS[stratum], ls=":", lw=1.5, alpha=0.6)
     ax.set_xscale("log", base=2)
     n_ticks = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 1536]
     ax.set_xticks(n_ticks)
@@ -56,25 +63,32 @@ def plot_t_star_trajectory(sub: pd.DataFrame, out_path: Path) -> None:
     model = sub["model"].iloc[0]; dataset = sub["dataset"].iloc[0]
     ax.set_title(f"T*(N) trajectory — {model} / {dataset}")
     fig.tight_layout()
-    fig.savefig(out_path, dpi=140)
+    fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
 
 
-def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path) -> None:
-    """sub_strat must be already filtered to one stratum, one (model, dataset)."""
-    s = sub_strat.sort_values("N")
-    if s.empty:
-        return
-    fig, ax = plt.subplots(figsize=(7, 5))
-    series_defs = [
-        ("best_t_mean",          "best-T",         "C0",  "best_t_seed_std"),
+def _5curve_series(include_fixed: bool):
+    """Return series definitions for 5-curve plot."""
+    defs = []
+    if include_fixed:
+        defs.append(("best_fixed_t_mean", "best-fixed-T", "C0", "best_fixed_t_std"))
+    defs.extend([
         ("acc_t1p0_mean",        "T=1.0",          "C3",  "acc_t1p0_std"),
         ("acc_t0p1_mean",        "T=0.1",          "C2",  "acc_t0p1_std"),
         ("acc_random_t_mean",    "random_T",       "C1",  "acc_random_t_std"),
         ("acc_equal_mix_mean",   "equal_mix",      "C4",  "acc_equal_mix_std"),
         ("acc_consensus_vote_mean","consensus_vote","C6", "acc_consensus_vote_std"),
-    ]
-    for col, label, color, std_col in series_defs:
+    ])
+    return defs
+
+
+def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
+                  include_fixed: bool = True) -> None:
+    s = sub_strat.sort_values("N")
+    if s.empty:
+        return
+    fig, ax = plt.subplots(figsize=(10, 7))
+    for col, label, color, std_col in _5curve_series(include_fixed):
         if col not in s.columns or s[col].isna().all():
             continue
         ax.plot(s["N"], s[col], marker="o", color=color, label=label, lw=1.8)
@@ -91,34 +105,23 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path) -> None
     ax.grid(True, alpha=0.3)
     ax.legend(loc="lower right", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
-    n_prob = int(s["level_n_problems"].iloc[0])
-    ax.set_title(f"5-curve compare — {model}/{dataset} [{stratum} n={n_prob}]")
+    ax.set_title(f"5-curve compare — {model}/{dataset} [{stratum}]")
     fig.tight_layout()
-    fig.savefig(out_path, dpi=140)
+    fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
 
 
 def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
-                        n_min: int = 64) -> None:
-    """Zoomed Plot B — N>=n_min, y-axis tight around top competitive baselines.
-
-    Same series as plot_5_curves, but x-range starts at n_min and y-range auto-fits to
-    {best-T, equal_mix, consensus_vote} band ±1pp so close differences are visible.
-    """
+                        n_min: int = 64, include_fixed: bool = True) -> None:
     s = sub_strat[sub_strat.N >= n_min].sort_values("N")
     if s.empty:
         return
-    fig, ax = plt.subplots(figsize=(8, 5))
-    series_defs = [
-        ("best_t_mean",          "best-T",         "C0",  "best_t_seed_std"),
-        ("acc_t1p0_mean",        "T=1.0",          "C3",  "acc_t1p0_std"),
-        ("acc_t0p1_mean",        "T=0.1",          "C2",  "acc_t0p1_std"),
-        ("acc_random_t_mean",    "random_T",       "C1",  "acc_random_t_std"),
-        ("acc_equal_mix_mean",   "equal_mix",      "C4",  "acc_equal_mix_std"),
-        ("acc_consensus_vote_mean","consensus_vote","C6", "acc_consensus_vote_std"),
-    ]
+    fig, ax = plt.subplots(figsize=(10, 7))
+
     # Determine zoom y-range from the TOP competitive baselines only
-    zoom_cols = ["best_t_mean", "acc_equal_mix_mean", "acc_consensus_vote_mean"]
+    zoom_cols = ["acc_equal_mix_mean", "acc_consensus_vote_mean"]
+    if include_fixed:
+        zoom_cols.insert(0, "best_fixed_t_mean")
     vals = []
     for c in zoom_cols:
         if c in s.columns:
@@ -126,13 +129,12 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
     if vals:
         y_lo = max(0.0, min(vals) - 0.01)
         y_hi = min(1.0, max(vals) + 0.005)
-        # Add a small margin
         margin = max(0.005, (y_hi - y_lo) * 0.1)
         y_lo -= margin; y_hi += margin
     else:
         y_lo, y_hi = 0.0, 1.0
 
-    for col, label, color, std_col in series_defs:
+    for col, label, color, std_col in _5curve_series(include_fixed):
         if col not in s.columns or s[col].isna().all():
             continue
         ax.plot(s["N"], s[col], marker="o", color=color, label=label, lw=1.8)
@@ -150,26 +152,32 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
     ax.grid(True, alpha=0.3)
     ax.legend(loc="best", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
-    n_prob = int(s["level_n_problems"].iloc[0])
-    ax.set_title(f"5-curve compare ZOOM N≥{n_min} — {model}/{dataset} [{stratum} n={n_prob}]")
+    ax.set_title(f"5-curve compare ZOOM N≥{n_min} — {model}/{dataset} [{stratum}]")
     fig.tight_layout()
-    fig.savefig(out_path, dpi=140)
+    fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
 
 
-def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path) -> None:
+def _gap_defs(use_fixed: bool):
+    """Return gap definitions. If use_fixed, use gap_fixed_vs_* columns."""
+    prefix = "gap_fixed_vs_" if use_fixed else "gap_vs_"
+    label_src = "best-fixed-T" if use_fixed else "best"
+    return [
+        (f"{prefix}t1p0",           f"{label_src} − T=1.0",           "C3"),
+        (f"{prefix}t0p1",           f"{label_src} − T=0.1",           "C2"),
+        (f"{prefix}random_t",       f"{label_src} − random_T",        "C1"),
+        (f"{prefix}equal_mix",      f"{label_src} − equal_mix",       "C4"),
+        (f"{prefix}consensus_vote", f"{label_src} − consensus_vote",  "C6"),
+    ]
+
+
+def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
+                         use_fixed: bool = True) -> None:
     s = sub_strat.sort_values("N")
     if s.empty:
         return
-    fig, ax = plt.subplots(figsize=(7, 5))
-    gap_defs = [
-        ("gap_vs_t1p0",           "best − T=1.0",           "C3"),
-        ("gap_vs_t0p1",           "best − T=0.1",           "C2"),
-        ("gap_vs_random_t",       "best − random_T",        "C1"),
-        ("gap_vs_equal_mix",      "best − equal_mix",       "C4"),
-        ("gap_vs_consensus_vote", "best − consensus_vote",  "C6"),
-    ]
-    for col, label, color in gap_defs:
+    fig, ax = plt.subplots(figsize=(10, 7))
+    for col, label, color in _gap_defs(use_fixed):
         if col not in s.columns or s[col].isna().all():
             continue
         ax.plot(s["N"], s[col] * 100, marker="o", color=color, label=label, lw=1.8)
@@ -183,10 +191,10 @@ def plot_gap_vs_baseline(sub_strat: pd.DataFrame, stratum: str, out_path: Path) 
     ax.grid(True, alpha=0.3)
     ax.legend(loc="best", fontsize=9)
     model = s["model"].iloc[0]; dataset = s["dataset"].iloc[0]
-    n_prob = int(s["level_n_problems"].iloc[0])
-    ax.set_title(f"best-T gap vs baselines — {model}/{dataset} [{stratum} n={n_prob}]")
+    title_src = "best-fixed-T" if use_fixed else "best-T"
+    ax.set_title(f"{title_src} gap vs baselines — {model}/{dataset} [{stratum}]")
     fig.tight_layout()
-    fig.savefig(out_path, dpi=140)
+    fig.savefig(out_path, dpi=FIG_DPI)
     plt.close(fig)
 
 
@@ -205,19 +213,44 @@ def main() -> None:
     for (model, dataset), sub in bt.groupby(["model", "dataset"]):
         combo_dir = args.figs_dir / f"{model}__{dataset}"
         combo_dir.mkdir(exist_ok=True)
-        # Plot A
-        plot_t_star_trajectory(sub, combo_dir / "A_t_star_trajectory.png")
-        # Plot B & C per stratum
+        # Plot A — two versions
+        plot_t_star_trajectory(sub, combo_dir / "A_t_star_trajectory_no_fixed.png",
+                               show_fixed=False)
+        plot_t_star_trajectory(sub, combo_dir / "A_t_star_trajectory_with_fixed.png",
+                               show_fixed=True)
+        # Plot B & C per stratum — two versions each
         for stratum in strata_bc:
             sub_s = sub[sub.stratum == stratum]
             if sub_s.empty:
                 continue
-            plot_5_curves(sub_s, stratum, combo_dir / f"B_5curve_{stratum}.png")
-            plot_5_curves_zoom(sub_s, stratum, combo_dir / f"B_5curve_{stratum}_zoom.png",
-                                n_min=64)
-            plot_5_curves_zoom(sub_s, stratum, combo_dir / f"B_5curve_{stratum}_zoom128.png",
-                                n_min=128)
-            plot_gap_vs_baseline(sub_s, stratum, combo_dir / f"C_gap_{stratum}.png")
+            # B — no fixed
+            plot_5_curves(sub_s, stratum,
+                          combo_dir / f"B_5curve_{stratum}_no_fixed.png",
+                          include_fixed=False)
+            plot_5_curves_zoom(sub_s, stratum,
+                                combo_dir / f"B_5curve_{stratum}_zoom_no_fixed.png",
+                                n_min=64, include_fixed=False)
+            plot_5_curves_zoom(sub_s, stratum,
+                                combo_dir / f"B_5curve_{stratum}_zoom128_no_fixed.png",
+                                n_min=128, include_fixed=False)
+            # B — with fixed
+            plot_5_curves(sub_s, stratum,
+                          combo_dir / f"B_5curve_{stratum}_with_fixed.png",
+                          include_fixed=True)
+            plot_5_curves_zoom(sub_s, stratum,
+                                combo_dir / f"B_5curve_{stratum}_zoom_with_fixed.png",
+                                n_min=64, include_fixed=True)
+            plot_5_curves_zoom(sub_s, stratum,
+                                combo_dir / f"B_5curve_{stratum}_zoom128_with_fixed.png",
+                                n_min=128, include_fixed=True)
+            # C — no fixed (uses original gap_vs_*)
+            plot_gap_vs_baseline(sub_s, stratum,
+                                  combo_dir / f"C_gap_{stratum}_no_fixed.png",
+                                  use_fixed=False)
+            # C — with fixed (uses gap_fixed_vs_*)
+            plot_gap_vs_baseline(sub_s, stratum,
+                                  combo_dir / f"C_gap_{stratum}_with_fixed.png",
+                                  use_fixed=True)
         print(f"  rendered {model}/{dataset} → {combo_dir}")
 
     print(f"\nDone. {args.figs_dir}")

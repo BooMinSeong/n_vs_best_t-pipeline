@@ -159,6 +159,47 @@ def main() -> None:
                               "acc_v1_mean", "acc_v1_std"]]
         new_table = new_table.merge(v1_keyed, on=["model", "dataset", "stratum", "N"], how="left")
 
+    # ============ Best fixed T (use T* at N=2048 for each combo/stratum) ============
+    max_n = 2048
+    fixed_t_map = {}  # (model, dataset, stratum) → best_fixed_t
+    for (model, dataset, stratum), grp in best_df.groupby(["model", "dataset", "stratum"]):
+        row_max = grp[grp.N == max_n]
+        if row_max.empty:
+            # fallback: use largest available N
+            row_max = grp.loc[grp.N.idxmax()]
+            fixed_t_map[(model, dataset, stratum)] = float(row_max["t_star"] if isinstance(row_max, pd.Series) else row_max.iloc[0]["t_star"])
+        else:
+            fixed_t_map[(model, dataset, stratum)] = float(row_max.iloc[0]["t_star"])
+
+    # For each row, look up fixed T and get the accuracy at that fixed T from single-T data
+    fixed_t_col = []
+    fixed_t_mean_col = []
+    fixed_t_std_col = []
+    for _, row in new_table.iterrows():
+        key = (row["model"], row["dataset"], row["stratum"])
+        ft = fixed_t_map.get(key)
+        if ft is None:
+            fixed_t_col.append(np.nan)
+            fixed_t_mean_col.append(np.nan)
+            fixed_t_std_col.append(np.nan)
+            continue
+        fixed_t_col.append(ft)
+        # Look up accuracy at this fixed T for this (model, dataset, stratum, N)
+        t_name = f"T{ft:.1f}"
+        lookup = st[(st.model == row["model"]) & (st.dataset == row["dataset"])
+                     & (st.stratum == row["stratum"]) & (st.N == row["N"])
+                     & (st.baseline == t_name)]
+        if not lookup.empty:
+            fixed_t_mean_col.append(float(lookup.iloc[0]["mean"]))
+            fixed_t_std_col.append(float(lookup.iloc[0]["std6"]))
+        else:
+            fixed_t_mean_col.append(np.nan)
+            fixed_t_std_col.append(np.nan)
+
+    new_table["best_fixed_t"] = fixed_t_col
+    new_table["best_fixed_t_mean"] = fixed_t_mean_col
+    new_table["best_fixed_t_std"] = fixed_t_std_col
+
     # ============ Gaps ============
     new_table["gap_vs_t1p0"] = new_table["best_t_mean"] - new_table["acc_t1p0_mean"]
     new_table["gap_vs_t0p1"] = new_table["best_t_mean"] - new_table["acc_t0p1_mean"]
@@ -167,6 +208,13 @@ def main() -> None:
     new_table["gap_vs_consensus_vote"] = new_table["best_t_mean"] - new_table["acc_consensus_vote_mean"]
     if "acc_v1_mean" in new_table.columns:
         new_table["gap_vs_v1"] = new_table["best_t_mean"] - new_table["acc_v1_mean"]
+
+    # Gaps for best_fixed_t
+    new_table["gap_fixed_vs_t1p0"] = new_table["best_fixed_t_mean"] - new_table["acc_t1p0_mean"]
+    new_table["gap_fixed_vs_t0p1"] = new_table["best_fixed_t_mean"] - new_table["acc_t0p1_mean"]
+    new_table["gap_fixed_vs_random_t"] = new_table["best_fixed_t_mean"] - new_table["acc_random_t_mean"]
+    new_table["gap_fixed_vs_equal_mix"] = new_table["best_fixed_t_mean"] - new_table["acc_equal_mix_mean"]
+    new_table["gap_fixed_vs_consensus_vote"] = new_table["best_fixed_t_mean"] - new_table["acc_consensus_vote_mean"]
 
     new_table = new_table.sort_values(["model", "dataset", "stratum", "N"]).reset_index(drop=True)
     new_table.to_csv(args.best_t_table, index=False)

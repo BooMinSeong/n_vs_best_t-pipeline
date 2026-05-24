@@ -58,7 +58,7 @@ def _plot_one(ax, sub, defs_list, include_t1: bool, stratum: str, n_prob: int,
     ax.set_ylabel(ylabel)
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=7, loc="best")
-    ax.set_title(f"{title_suffix} [{stratum} n={n_prob}]")
+    ax.set_title(f"{title_suffix} [{stratum}]")
 
 
 def plot_strata(df: pd.DataFrame, out_dir: Path, combo: str) -> None:
@@ -71,7 +71,7 @@ def plot_strata(df: pd.DataFrame, out_dir: Path, combo: str) -> None:
             continue
 
         # 2×2: top em variants, bottom cv variants, left raw, right gap
-        fig, axes = plt.subplots(2, 2, figsize=(15, 10), sharex="col")
+        fig, axes = plt.subplots(2, 2, figsize=(18, 12), sharex="col")
 
         # Top-left: em variants raw
         _plot_one(axes[0, 0], sub, EM_DEFS, include_t1=True, stratum=stratum,
@@ -104,11 +104,11 @@ def plot_strata(df: pd.DataFrame, out_dir: Path, combo: str) -> None:
             prefix = "equal_mix" if ax_idx == 0 else "consensus_vote"
             ax2.set_title(f"{prefix} gap vs T=1.0 [{stratum}]")
 
-        fig.suptitle(f"alloc compare 4 variants × 2 agg — {combo} [{stratum}]",
+        fig.suptitle(f"alloc compare 4 variants × 2 agg — {combo} [{stratum}]",  # stratum only, no n_prob
                      y=1.0, fontsize=12)
         fig.tight_layout()
         out_path = out_dir / f"alloc_compare_{stratum}.png"
-        fig.savefig(out_path, dpi=140, bbox_inches="tight")
+        fig.savefig(out_path, dpi=200, bbox_inches="tight")
         plt.close(fig)
         print(f"  wrote {out_path}")
 
