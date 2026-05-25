@@ -80,14 +80,17 @@ def plot_gap_bar(bt: pd.DataFrame, model: str, dataset: str, N: int,
 
 
 def plot_accuracy_bar(bt: pd.DataFrame, model: str, dataset: str, N: int,
-                      out_path: Path) -> None:
-    """Bar chart: raw accuracy (%) per difficulty level, including oracle-T."""
+                      out_path: Path, show_oracle: bool = True) -> None:
+    """Bar chart: raw accuracy (%) per difficulty level."""
     sub = bt[(bt.model == model) & (bt.dataset == dataset) & (bt.N == N)]
     levels = [s for s in STRATA if not sub[sub.stratum == s].empty]
     if not levels:
         return
 
-    all_series = [("best_t_mean", "oracle-T")] + BASELINES
+    if show_oracle:
+        all_series = [("best_t_mean", "oracle-T")] + BASELINES
+    else:
+        all_series = list(BASELINES)
     x = np.arange(len(levels))
     n_bars = len(all_series)
     width = 0.8 / n_bars
@@ -136,9 +139,11 @@ def main() -> None:
         safe_model = model.replace(".", "_").replace("-", "_")
         gap_path = args.figs_dir / f"difficulty_gap_vs_oracle_{args.dataset}_N{args.N}_{safe_model}_bar.png"
         acc_path = args.figs_dir / f"difficulty_accuracy_{args.dataset}_N{args.N}_{safe_model}_bar.png"
+        acc_no_oracle_path = args.figs_dir / f"difficulty_accuracy_{args.dataset}_N{args.N}_{safe_model}_bar_no_oracle.png"
         plot_gap_bar(bt, model, args.dataset, args.N, gap_path)
-        plot_accuracy_bar(bt, model, args.dataset, args.N, acc_path)
-        print(f"  {model} → {gap_path.name}, {acc_path.name}")
+        plot_accuracy_bar(bt, model, args.dataset, args.N, acc_path, show_oracle=True)
+        plot_accuracy_bar(bt, model, args.dataset, args.N, acc_no_oracle_path, show_oracle=False)
+        print(f"  {model} → {gap_path.name}, {acc_path.name}, {acc_no_oracle_path.name}")
 
     print(f"\nDone. {len(models)} models rendered.")
 
