@@ -118,6 +118,40 @@ Cross-comparison 섹션 포함).
 
 자세한 정의 / 결과 / 검증은 `outputs/n_vs_best_t/REPORT.md` 참고.
 
+## Per-problem regret 분석 (`scripts/per_problem_regret/`)
+
+Dataset-level 비교를 **per-problem 분포 분석**으로 확장한다 (oracle gap / regret 분포 /
+$T^*(p)$ 분포 / paired 비교 / stochastic dominance). GPU 비용 0 — 같은
+`distributions.json` pool 을 재사용하는 CPU 후처리.
+
+**중요 (방법론)**: 입력은 raw generation pool 이 아니라 per-problem × 12 temperature 의
+*empirical answer 분포* (`distributions.json`, seed 6 × 256 = 1536 generation 집계). 따라서
+per-problem maj@N 정확도는 `multinomial(N, P)` 샘플링으로 추정한다 (기존 `run_sim_v2_one.py`
+와 동일 엔진 재사용 → dataset-level 수치와 같은 통화). spec §2.1 의 "raw generation
+bootstrap" 은 데이터 구조상 적용 불가하며 본 구현이 유일하게 가능한 방식이다.
+
+```bash
+# 한 combo end-to-end (compute → analyze → figures → REPORT)
+uv run python scripts/per_problem_regret/run_pipeline.py \
+    --combos aime2025_Qwen3-4B-Instruct-2507 --n-sims 5000
+
+# 전체 combo (combos.txt). 대용량(mathfull 12500문제)은 SLURM 권장.
+uv run python scripts/per_problem_regret/run_pipeline.py
+
+# 이미 a_hat parquet 이 있으면 분석/그림/리포트만 재생성
+uv run python scripts/per_problem_regret/run_pipeline.py --combos <C> --skip-compute
+
+# acceptance / sanity 체크 (spec §1.2, §5)
+uv run python scripts/per_problem_regret/validate.py
+```
+
+산출 (`outputs/per_problem_regret/`): `a_hat_per_problem__{combo}.parquet`,
+`per_problem_oracle.parquet`, `per_problem_regret.parquet`, `summary_*.csv` (6종),
+`REPORT.md` (최상위 인덱스: 방법론 + oracle-gap 매트릭스 + cross-combo overview +
+combo별 목차 링크) + `reports/{model}__{dataset}.md` (combo당 1파일, N×전략 cross-table),
+`figs/` (6종 figure, png+pdf). 모듈: `config` / `compute_a_hat` / `analyze` / `plots` /
+`build_report` / `validate` / `run_pipeline`.
+
 ## SLURM 환경 가정
 
 `scripts/slurm_common.sh` 가 다음을 수행:
