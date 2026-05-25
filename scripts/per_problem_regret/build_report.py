@@ -21,6 +21,10 @@ from per_problem_regret import config as C
 REGRET_STRATS = ["T0.1", "T1.0", "random_T", "equal_mix", "consensus_vote"]
 SNAPSHOT_N = 256  # point-in-time N for T* / paired / dominance tables
 
+# Datasets dropped from the report. math1k is a subsample of the MATH set already
+# represented by mathfull/math500, so including it double-counts the same items.
+EXCLUDE_DATASETS = {"math1k"}
+
 
 def _fmt(x, nd=4):
     return "—" if pd.isna(x) else f"{x:.{nd}f}"
@@ -165,6 +169,11 @@ def build(out_dir: Path) -> str:
     tstar = pd.read_csv(out_dir / "summary_t_star_distribution.csv")
     paired = pd.read_csv(out_dir / "summary_paired_comparison.csv")
     dom = pd.read_csv(out_dir / "summary_stochastic_dominance.csv")
+
+    gap, dist, tstar, paired, dom = (
+        df[~df.dataset.isin(EXCLUDE_DATASETS)]
+        for df in (gap, dist, tstar, paired, dom)
+    )
 
     reports_dir = out_dir / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)

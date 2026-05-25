@@ -10,12 +10,12 @@ Snapshot tables use N=256. Per-combo detail (all N) in `reports/`.
 
 Per-problem-oracle minus best-single-fixed-T accuracy. Larger = more to gain from per-problem temperature selection.
 
-| model \ dataset | aime2023 | aime2024 | aime2025 | aime2026 | gsm8kfull | math1k | math500 | mathfull |
-|---|---|---|---|---|---|---|---|---|
-| Llama-3.2-3B | — | — | — | — | 2.52 | — | — | 5.17 |
-| Phi-4-mini-instruct | 0.41 | 0.00 | 0.03 | 0.34 | 2.14 | — | 5.77 | — |
-| Qwen2.5-3B | 0.09 | 2.45 | 0.17 | 0.08 | 2.51 | 8.41 | — | 4.42 |
-| Qwen3-4B-Instruct-2507 | 0.00 | 0.64 | 0.98 | 0.11 | — | — | — | — |
+| model \ dataset | aime2023 | aime2024 | aime2025 | aime2026 | gsm8kfull | math500 | mathfull |
+|---|---|---|---|---|---|---|---|
+| Llama-3.2-3B | — | — | — | — | 2.52 | — | 5.17 |
+| Phi-4-mini-instruct | 0.41 | 0.00 | 0.03 | 0.34 | 2.14 | 5.77 | — |
+| Qwen2.5-3B | 0.09 | 2.45 | 0.17 | 0.08 | 2.51 | — | 4.42 |
+| Qwen3-4B-Instruct-2507 | 0.00 | 0.64 | 0.98 | 0.11 | — | — | — |
 
 ## Deployable-strategy mean R2 regret @ N=256
 
@@ -38,7 +38,6 @@ Lower = closer to the best single fixed T.
 | gsm8kfull / Llama-3.2-3B | 0.0030 | 0.0350 | 0.0214 | 0.0169 |
 | gsm8kfull / Phi-4-mini-instruct | 0.0001 | 0.0121 | 0.0063 | 0.0045 |
 | gsm8kfull / Qwen2.5-3B | 0.0000 | 0.0088 | 0.0058 | 0.0050 |
-| math1k / Qwen2.5-3B | 0.0303 | 0.0311 | 0.0059 | 0.0078 |
 | math500 / Phi-4-mini-instruct | 0.0367 | 0.0350 | 0.0119 | 0.0075 |
 | mathfull / Llama-3.2-3B | 0.0206 | 0.0461 | 0.0218 | 0.0113 |
 | mathfull / Qwen2.5-3B | 0.0086 | 0.0144 | 0.0054 | 0.0051 |
@@ -58,7 +57,6 @@ Lower = closer to the best single fixed T.
 - [Qwen2.5-3B / aime2025](reports/Qwen2.5-3B__aime2025.md) — oracle gap +0.17 pp
 - [Qwen2.5-3B / aime2026](reports/Qwen2.5-3B__aime2026.md) — oracle gap +0.08 pp
 - [Qwen2.5-3B / gsm8kfull](reports/Qwen2.5-3B__gsm8kfull.md) — oracle gap +2.51 pp
-- [Qwen2.5-3B / math1k](reports/Qwen2.5-3B__math1k.md) — oracle gap +8.41 pp
 - [Qwen2.5-3B / mathfull](reports/Qwen2.5-3B__mathfull.md) — oracle gap +4.42 pp
 - [Qwen3-4B-Instruct-2507 / aime2023](reports/Qwen3-4B-Instruct-2507__aime2023.md) — oracle gap +0.00 pp
 - [Qwen3-4B-Instruct-2507 / aime2024](reports/Qwen3-4B-Instruct-2507__aime2024.md) — oracle gap +0.64 pp

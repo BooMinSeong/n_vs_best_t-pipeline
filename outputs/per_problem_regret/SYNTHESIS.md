@@ -53,13 +53,13 @@ temperature mixing at all. It tracks **difficulty dispersion** (gap @ $N{=}256$)
 
 | dataset family | example combo | $\Delta_{\text{oracle}}$ |
 |---|---|---|
-| MATH (full/1k/500) | math1k / Qwen2.5-3B | **+8.4 pp** |
+| MATH (full/500) | math500 / Phi-4-mini | **+5.8 pp** |
 | | mathfull / Llama-3.2-3B | +5.2 pp |
 | | mathfull / Qwen2.5-3B | +4.4 pp |
 | GSM8K | gsm8kfull / Qwen2.5-3B | +2.5 pp |
 | AIME (single year) | most combos | < 1 pp |
 
-The prize is real on heterogeneous math benchmarks (+4–8 pp) and negligible on AIME,
+The prize is real on heterogeneous math benchmarks (+4–6 pp) and negligible on AIME,
 where problems cluster at the extremes of solvability. The optimal temperature is also
 genuinely spread out: on mathfull/Qwen2.5-3B, $81\%$ of problems prefer $T^\*{=}0.1$ but
 a heavy $19\%$ tail spans $T{=}0.2\!-\!1.2$ (incl. $\sim6\%$ at $T\ge1.0$), so **no single
@@ -74,15 +74,15 @@ unaffected because the bias is a common additive shift.)*
 ## 3. Main result: only temperature mixing keeps regret stable as $N$ grows
 
 The decisive evidence is how the **tail** of $R_2$ moves with the budget. Averaged over
-the seven MATH/GSM8K combos:
+the six MATH/GSM8K combos:
 
 | strategy | $\mathrm{p95}\,R_2$ @ $N{=}8$ | @ $N{=}2048$ | trend |
 |---|---|---|---|
-| Fixed $T{=}0.1$ | 0.42 | **0.96** | **diverges** ↑ |
-| Fixed $T{=}1.0$ | 0.19 | 0.22 | flat |
-| Random-$T$ | 0.14 | 0.23 | worsens ↑ |
-| **Temperature Pool** | 0.10 | **0.011** | **→ 0** ↓ |
-| **Temperature Consensus** | 0.10 | **0.011** | **→ 0** ↓ |
+| Fixed $T{=}0.1$ | 0.40 | **0.95** | **diverges** ↑ |
+| Fixed $T{=}1.0$ | 0.17 | 0.17 | flat |
+| Random-$T$ | 0.14 | 0.22 | worsens ↑ |
+| **Temperature Pool** | 0.10 | **0.013** | **→ 0** ↓ |
+| **Temperature Consensus** | 0.10 | **0.007** | **→ 0** ↓ |
 
 Only the two mixing strategies have a tail that **monotonically collapses toward the
 oracle**. The mechanism, problem-by-problem: a low fixed temperature is sharp, so more
@@ -114,18 +114,18 @@ the correct answer? The comparison below is exactly that.
 
 The sharpest risk statement is the probability of a **catastrophic per-problem loss**
 ($R_2>0.1$ — i.e. losing more than 10 accuracy points to the best fixed temperature) at
-$N{=}2048$, averaged over the seven MATH/GSM8K combos:
+$N{=}2048$, averaged over the six MATH/GSM8K combos:
 
 | strategy | $\Pr[R_2>0.1]$ @ $N{=}2048$ |
 |---|---|
-| Random-$T$ | 10.9% |
-| Fixed $T{=}0.1$ | 9.0% |
-| Fixed $T{=}1.0$ | 3.7% |
+| Random-$T$ | 10.2% |
+| Fixed $T{=}0.1$ | 8.2% |
+| Fixed $T{=}1.0$ | 3.2% |
 | **Temperature Pool** | 2.9% |
-| **Temperature Consensus** | **2.7%** |
+| **Temperature Consensus** | **2.5%** |
 
 A single-temperature bet — a fixed default *or* a random draw — loses badly on roughly
-**1 problem in 10**; mixing cuts that to **~1 in 35**. This is the operational meaning of
+**1 problem in 10**; mixing cuts that to **~1 in 40**. This is the operational meaning of
 "risk avoidance": the strategies do not beat the best fixed temperature on average (mean
 $R_2>0$ always; see §5), but they convert a high-variance temperature *bet* into a
 low-variance aggregate, eliminating the catastrophic tail you incur whenever the single
@@ -143,16 +143,16 @@ MATH/GSM8K combo, while fixed temperatures do not generalize:
 |---|---|---|---|---|---|
 | gsm8kfull / Qwen2.5-3B | 0.039 | 0.000 | 0.009 | 0.006 | 0.004 |
 | gsm8kfull / Llama-3.2-3B | 0.079 | 0.005 | 0.037 | 0.023 | 0.016 |
-| math1k / Qwen2.5-3B | 0.079 | 0.025 | 0.030 | 0.005 | 0.004 |
 | math500 / Phi-4-mini | 0.055 | 0.042 | 0.038 | 0.017 | 0.008 |
 | mathfull / Qwen2.5-3B | 0.044 | 0.006 | 0.014 | 0.005 | 0.002 |
 | mathfull / Llama-3.2-3B | 0.064 | 0.022 | 0.047 | 0.023 | 0.005 |
 
 *(mean $R_2$ @ $N{=}2048$.)* Fixed $T{=}1.0$ looks competitive on GSM8K **only because
 $T^\dagger\approx1.0$ there** — on math500 it pays $\mathrm{p95}=0.87$. Mixing needs no
-prior knowledge of the right temperature: among the four deployable strategies,
-**Temperature Consensus has the lowest mean $R_2$ in 9 of 19 combos and Pool/Consensus
-together in 10**, versus 7 for $T{=}1.0$ (and those 7 are the GSM8K-like cases where the
+prior knowledge of the right temperature: among the four deployable strategies (counting
+over the 18 MATH/GSM8K + AIME combos, math1k excluded),
+**Temperature Consensus has the lowest mean $R_2$ in 8 of 18 combos and Pool/Consensus
+together in 9**, versus 7 for $T{=}1.0$ (and those 7 are the GSM8K-like cases where the
 fixed choice happens to coincide with the oracle).
 
 ---
@@ -187,9 +187,13 @@ scale** — they are not interchangeable.
   with the dataset-level tables to within $0.0007$ on average (max $0.011$ on $<\!30$-problem
   AIME cells, i.e. the reference's own 240-replicate noise).
 - **Oracle bias.** $\sim$1 pp upward bias in $a^\*$ inflates absolute gaps only (§2).
-- **AIME.** 22–30 problems per year give low paired-test power and near-zero oracle gap;
-  the stability claim is supported on the high-dispersion MATH/GSM8K benchmarks (Wilcoxon
-  $T{=}0.1$ vs $T{=}1.0$ on mathfull, $n{=}4965$: $p=1.5\times10^{-18}$).
+- **AIME.** 21–27 problems per year give low paired-test power and near-zero oracle gap
+  ($\le1.5$ pp), so its regret numbers are noise-dominated and reported separately
+  (`TABLES.md` §3): the qualitative ordering survives on the 12-combo average (mixing
+  lowest mean and catastrophic rate), but per-combo $\Pr[R_2>0.1]$ is quantized to
+  $\sim1/n\approx4\%$. The stability claim is supported on the high-dispersion MATH/GSM8K
+  benchmarks (Wilcoxon $T{=}0.1$ vs $T{=}1.0$ on mathfull, $n{=}4965$:
+  $p=1.5\times10^{-18}$).
 - **No free dominance.** At any fixed $N$ the regret CDFs of the deployable strategies
   cross (no first-order stochastic dominance); the stability claim is about the *trend in
   $N$*, not a pointwise guarantee.
