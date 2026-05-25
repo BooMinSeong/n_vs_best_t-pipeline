@@ -40,6 +40,7 @@ outputs/*
 !outputs/per_problem_regret/
 outputs/per_problem_regret/*
 !outputs/per_problem_regret/REPORT.md
+!outputs/per_problem_regret/SYNTHESIS.md
 !outputs/per_problem_regret/summary_*.csv
 !outputs/per_problem_regret/reports/
 
