@@ -34,6 +34,15 @@ env/
 outputs/*
 !outputs/n_vs_best_t/
 
+# per_problem_regret: track text deliverables only (REPORT + per-combo reports +
+# summary CSVs). Exclude bulky/binary artifacts: parquet, figures (png/pdf),
+# and pid_index__*.csv (per-problem text dumps).
+!outputs/per_problem_regret/
+outputs/per_problem_regret/*
+!outputs/per_problem_regret/REPORT.md
+!outputs/per_problem_regret/summary_*.csv
+!outputs/per_problem_regret/reports/
+
 # SLURM logs
 slurm_logs/
 .slurm/
