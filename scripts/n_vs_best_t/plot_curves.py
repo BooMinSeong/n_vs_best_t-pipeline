@@ -83,7 +83,7 @@ def _5curve_series(include_fixed: bool):
 
 
 def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
-                  include_fixed: bool = True) -> None:
+                  include_fixed: bool = True, show_band: bool = True) -> None:
     s = sub_strat.sort_values("N")
     if s.empty:
         return
@@ -92,7 +92,7 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
         if col not in s.columns or s[col].isna().all():
             continue
         ax.plot(s["N"], s[col], marker="o", color=color, label=label, lw=1.8)
-        if std_col in s.columns:
+        if show_band and std_col in s.columns:
             std = s[std_col].fillna(0.0)
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
 
@@ -112,7 +112,8 @@ def plot_5_curves(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
 
 
 def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
-                        n_min: int = 64, include_fixed: bool = True) -> None:
+                        n_min: int = 64, include_fixed: bool = True,
+                        show_band: bool = True) -> None:
     s = sub_strat[sub_strat.N >= n_min].sort_values("N")
     if s.empty:
         return
@@ -138,7 +139,7 @@ def plot_5_curves_zoom(sub_strat: pd.DataFrame, stratum: str, out_path: Path,
         if col not in s.columns or s[col].isna().all():
             continue
         ax.plot(s["N"], s[col], marker="o", color=color, label=label, lw=1.8)
-        if std_col in s.columns:
+        if show_band and std_col in s.columns:
             std = s[std_col].fillna(0.0)
             ax.fill_between(s["N"], s[col] - std, s[col] + std, color=color, alpha=0.12)
 
@@ -223,26 +224,28 @@ def main() -> None:
             sub_s = sub[sub.stratum == stratum]
             if sub_s.empty:
                 continue
-            # B — no fixed
-            plot_5_curves(sub_s, stratum,
-                          combo_dir / f"B_5curve_{stratum}_no_fixed.png",
-                          include_fixed=False)
-            plot_5_curves_zoom(sub_s, stratum,
-                                combo_dir / f"B_5curve_{stratum}_zoom_no_fixed.png",
-                                n_min=64, include_fixed=False)
-            plot_5_curves_zoom(sub_s, stratum,
-                                combo_dir / f"B_5curve_{stratum}_zoom128_no_fixed.png",
-                                n_min=128, include_fixed=False)
-            # B — with fixed
-            plot_5_curves(sub_s, stratum,
-                          combo_dir / f"B_5curve_{stratum}_with_fixed.png",
-                          include_fixed=True)
-            plot_5_curves_zoom(sub_s, stratum,
-                                combo_dir / f"B_5curve_{stratum}_zoom_with_fixed.png",
-                                n_min=64, include_fixed=True)
-            plot_5_curves_zoom(sub_s, stratum,
-                                combo_dir / f"B_5curve_{stratum}_zoom128_with_fixed.png",
-                                n_min=128, include_fixed=True)
+            # B — both with-band (default) and no-band (_no_band suffix) variants
+            for show_band, band_sfx in [(True, ""), (False, "_no_band")]:
+                # B — no fixed
+                plot_5_curves(sub_s, stratum,
+                              combo_dir / f"B_5curve_{stratum}_no_fixed{band_sfx}.png",
+                              include_fixed=False, show_band=show_band)
+                plot_5_curves_zoom(sub_s, stratum,
+                                    combo_dir / f"B_5curve_{stratum}_zoom_no_fixed{band_sfx}.png",
+                                    n_min=64, include_fixed=False, show_band=show_band)
+                plot_5_curves_zoom(sub_s, stratum,
+                                    combo_dir / f"B_5curve_{stratum}_zoom128_no_fixed{band_sfx}.png",
+                                    n_min=128, include_fixed=False, show_band=show_band)
+                # B — with fixed
+                plot_5_curves(sub_s, stratum,
+                              combo_dir / f"B_5curve_{stratum}_with_fixed{band_sfx}.png",
+                              include_fixed=True, show_band=show_band)
+                plot_5_curves_zoom(sub_s, stratum,
+                                    combo_dir / f"B_5curve_{stratum}_zoom_with_fixed{band_sfx}.png",
+                                    n_min=64, include_fixed=True, show_band=show_band)
+                plot_5_curves_zoom(sub_s, stratum,
+                                    combo_dir / f"B_5curve_{stratum}_zoom128_with_fixed{band_sfx}.png",
+                                    n_min=128, include_fixed=True, show_band=show_band)
             # C — no fixed (uses original gap_vs_*)
             plot_gap_vs_baseline(sub_s, stratum,
                                   combo_dir / f"C_gap_{stratum}_no_fixed.png",
