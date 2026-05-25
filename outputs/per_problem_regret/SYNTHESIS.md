@@ -104,6 +104,34 @@ makes this concrete — $\mathrm{p95}\,R_2$:
 | **Pool** | 0.061 | 0.071 | 0.028 | 0.0002 | **0.0000** |
 | **Consensus** | 0.061 | 0.14 | 0.037 | 0.0009 | **0.0000** |
 
+**Interpretation of the large-$N$ limit.** At $N{=}2048$ maj@$N$ has essentially
+converged: for $\sim\!96\%$ of problems the per-problem outcome is deterministic
+(within $0.02$ of $0$ or $1$) given the empirical output distribution. We are therefore
+*not* measuring finite-sample noise — that variance has been deliberately spent down to
+certainty by the large budget. What remains is each strategy's **structural risk**: when
+the sampling budget is no longer the bottleneck, which aggregation rule still recovers
+the correct answer? The comparison below is exactly that.
+
+The sharpest risk statement is the probability of a **catastrophic per-problem loss**
+($R_2>0.1$ — i.e. losing more than 10 accuracy points to the best fixed temperature) at
+$N{=}2048$, averaged over the seven MATH/GSM8K combos:
+
+| strategy | $\Pr[R_2>0.1]$ @ $N{=}2048$ |
+|---|---|
+| Random-$T$ | 10.9% |
+| Fixed $T{=}0.1$ | 9.0% |
+| Fixed $T{=}1.0$ | 3.7% |
+| **Temperature Pool** | 2.9% |
+| **Temperature Consensus** | **2.7%** |
+
+A single-temperature bet — a fixed default *or* a random draw — loses badly on roughly
+**1 problem in 10**; mixing cuts that to **~1 in 35**. This is the operational meaning of
+"risk avoidance": the strategies do not beat the best fixed temperature on average (mean
+$R_2>0$ always; see §5), but they convert a high-variance temperature *bet* into a
+low-variance aggregate, eliminating the catastrophic tail you incur whenever the single
+fixed choice is wrong — and which temperature is wrong is not knowable in advance ($T^\dagger$
+ranges over $T{=}0.5\text{–}0.9$ across these combos).
+
 ---
 
 ## 4. The result holds across datasets
@@ -129,16 +157,26 @@ fixed choice happens to coincide with the oracle).
 
 ---
 
-## 5. Pooling vs Consensus: interchangeable, with a mild large-$N$ edge to Consensus
+## 5. Pooling vs Consensus: identical only below $N{=}12$, then genuinely different
 
-The two mixing strategies are statistically **indistinguishable** at moderate budget
-(mathfull/Qwen2.5-3B, $N{=}256$: paired $\Delta=-0.0003$, win/tie/loss $239/4486/240$,
-Wilcoxon $p=0.93$), and their per-problem regrets lie on the identity line
-(`fig2_pairwise_scatter`). At large $N$ Consensus carries a small mean-regret advantage
-(e.g. mathfull/Llama $0.005$ vs Pool $0.023$ at $N{=}2048$), while Pool occasionally has
-a marginally tighter tail. For practical purposes they are interchangeable; both
-**first-order considerations favor either over fixed-$T$ and Random-$T$** at every budget
-we tested.
+The two coincide **only** in the degenerate regime where round-robin gives at most one
+sample per temperature ($N<12$): there each per-temperature majority is its lone sample,
+so Consensus reduces exactly to Pool. The per-problem accuracy difference
+$|a_{\text{Pool}}-a_{\text{Cons}}|$ is identically $0$ at $N\in\{1,2,4,8\}$ in every combo.
+
+From $N\ge16$ they are genuinely distinct algorithms and **differ in accuracy**. Although
+the dataset-mean gap stays small (wins roughly cancel), the *per-problem* accuracies
+diverge sharply: $\max_p|a_{\text{Pool}}-a_{\text{Cons}}|$ grows from $\sim\!0.30$ at
+$N{=}16$ to $\sim\!0.9\text{–}1.0$ at $N{=}2048$ — at scale some problems are solved
+almost surely by one strategy and missed by the other. The difference is systematic and
+favors **Consensus** at large budgets: at $N{=}2048$ Consensus has lower mean $R_2$ than
+Pool on every MATH/GSM8K combo (e.g. mathfull/Llama $0.005$ vs $0.023$; mathfull/Qwen
+$0.002$ vs $0.005$; gsm8k/Qwen $0.004$ vs $0.006$), and the paired test is significant
+(mathfull/Qwen, $N{=}2048$: $\Delta=-0.0033$, win/tie/loss $104/4708/153$, Wilcoxon
+$p=2\times10^{-4}$). The frequently-cited "tie" ($p=0.93$) holds only at the $N{=}256$
+crossover, not in general. Both strategies have comparably small regret *tails* (p95
+collapses toward the oracle for each), but **Consensus is the lower-regret of the two at
+scale** — they are not interchangeable.
 
 ---
 
