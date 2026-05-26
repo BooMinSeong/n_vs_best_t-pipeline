@@ -165,103 +165,109 @@ GSM8K cases where the fixed choice coincides with the oracle).
 ## 5. Mid-budget regime ($N=64,128,256,512$)
 
 The §2–§3 tables jump from $N{=}8$ to $N{=}2048$; the practically relevant budgets sit in
-between. Mean over the seven MATH/GSM8K combos:
+between. Aggregated over the **six gsm8k+math model-family units** (gsm8k = `gsm8kfull`;
+math = `mathfull`/`math500`, `math1k` excluded; equal weight per unit — same family scheme as
+`PER_MODEL_REGRET.md`):
 
 **Mean $R_1$ / (mean $R_2$ in parens)**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.0957 (0.0521) | 0.0981 (0.0543) | 0.0997 (0.0555) | 0.1007 (0.0564) |
-| Fixed $T{=}1.0$ | 0.0585 (0.0150) | 0.0583 (0.0144) | 0.0584 (0.0142) | 0.0585 (0.0142) |
-| Random-$T$ | 0.0692 (0.0256) | 0.0698 (0.0260) | 0.0703 (0.0261) | 0.0707 (0.0264) |
-| **Pool** | 0.0545 (0.0110) | 0.0546 (0.0108) | 0.0554 (0.0112) | 0.0557 (0.0114) |
-| **Consensus** | 0.0564 (0.0129) | 0.0539 (0.0101) | **0.0525** (0.0083) | **0.0515** (0.0072) |
+| Fixed $T{=}0.1$ | 0.0858 (0.0486) | 0.0879 (0.0505) | 0.0892 (0.0516) | 0.0900 (0.0525) |
+| Fixed $T{=}1.0$ | 0.0487 (0.0115) | 0.0488 (0.0114) | 0.0490 (0.0115) | 0.0493 (0.0118) |
+| Random-$T$ | 0.0617 (0.0244) | 0.0624 (0.0250) | 0.0628 (0.0252) | 0.0631 (0.0256) |
+| **Pool** | 0.0489 (0.0116) | 0.0489 (0.0115) | 0.0497 (0.0121) | 0.0499 (0.0124) |
+| **Consensus** | 0.0501 (0.0129) | 0.0476 (0.0102) | **0.0459** (0.0084) | **0.0447** (0.0073) |
 
 **$\mathrm{p95}\,R_1$ (tail)**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.812 | 0.892 | 0.946 | 0.980 |
-| Fixed $T{=}1.0$ | 0.372 | 0.410 | 0.442 | 0.464 |
-| Random-$T$ | 0.368 | 0.397 | 0.423 | 0.439 |
-| **Pool** | 0.347 | 0.393 | 0.422 | 0.451 |
-| **Consensus** | 0.389 | 0.383 | **0.374** | **0.381** |
+| Fixed $T{=}0.1$ | 0.791 | 0.876 | 0.937 | 0.976 |
+| Fixed $T{=}1.0$ | 0.316 | 0.345 | 0.366 | 0.379 |
+| Random-$T$ | 0.349 | 0.370 | 0.393 | 0.405 |
+| **Pool** | 0.318 | 0.358 | 0.373 | 0.389 |
+| **Consensus** | 0.358 | 0.343 | **0.322** | **0.314** |
 
 **$\Pr[R_1>0.1]$**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.156 | 0.145 | 0.133 | 0.125 |
-| Fixed $T{=}1.0$ | 0.123 | 0.110 | 0.097 | 0.087 |
-| Random-$T$ | 0.207 | 0.192 | 0.180 | 0.171 |
-| **Pool** | 0.133 | 0.112 | 0.098 | **0.085** |
-| **Consensus** | 0.132 | 0.115 | 0.100 | 0.088 |
+| Fixed $T{=}0.1$ | 0.139 | 0.128 | 0.119 | 0.111 |
+| Fixed $T{=}1.0$ | 0.102 | 0.091 | 0.081 | 0.073 |
+| Random-$T$ | 0.183 | 0.171 | 0.161 | 0.155 |
+| **Pool** | 0.117 | 0.099 | 0.086 | **0.075** |
+| **Consensus** | 0.117 | 0.101 | 0.089 | 0.077 |
 
 Three things crystallize in this window:
 
 1. **Mean ranking is fixed and the Pool→Consensus crossover happens here.** $R_1$ tracks
-   $R_2$ by the same ~0.044 offset (§2). Consensus overtakes Pool at $N{=}128$ (mean $R_1$
-   0.0539 < 0.0546; mean $R_2$ 0.0101 < 0.0108) and pulls further ahead through $N{=}512$.
+   $R_2$ by the same near-constant offset (~0.037 under this grouping, §2). Consensus overtakes
+   Pool at $N{=}128$ (mean $R_1$ 0.0476 < 0.0489; mean $R_2$ 0.0102 < 0.0115) and pulls
+   further ahead through $N{=}512$.
 2. **$R_2$ tail is already collapsing; $R_1$ tail is not — but that is the §0 cost, not a
-   strategy flaw.** By $N{=}512$, $\mathrm{p95}\,R_2$ for Pool/Consensus has fallen to ~0.04
-   (avoidable regret, genuinely eliminated), while $T{=}0.1$ diverges (0.69→0.86) and
-   $T{=}1.0$/Random plateau at ~0.2. Under $R_1$, Pool's tail rises with $N$ (0.347→0.451)
-   and only Consensus stays flat (~0.38) — a *diagnostic* difference in where each
+   strategy flaw.** By $N{=}512$, $\mathrm{p95}\,R_2$ for Pool/Consensus has fallen to ~0.03–0.04
+   (avoidable regret, genuinely eliminated), while $T{=}0.1$ diverges (0.66→0.84) and
+   $T{=}1.0$/Random plateau at ~0.16–0.21. Under $R_1$, Pool's tail rises with $N$ (0.318→0.389)
+   and only Consensus stays flat/falling (~0.36→0.31) — a *diagnostic* difference in where each
    strategy's errors fall relative to the oracle gap, not regret a problem-agnostic strategy
    could recover.
 3. **$\Pr[R_1>0.1]$ compresses the mixing advantage — by construction.** Against the oracle,
-   Pool/Consensus/$T{=}1.0$ all converge to ~0.09 at $N{=}512$ because the common,
-   unrecoverable oracle-gap mass dominates; only Random-$T$ stays clearly worse (~0.17). The
+   Pool/Consensus/$T{=}1.0$ all converge to ~0.075 at $N{=}512$ because the common,
+   unrecoverable oracle-gap mass dominates; only Random-$T$ stays clearly worse (~0.155). The
    mixing edge that is decisive under $R_2$ is invisible here precisely *because* $R_1$
    charges every strategy for the unknown-problem cost it cannot avoid.
 
 ---
 
-## 6. Integrated average including AIME (all 19 combos)
+## 6. Integrated average including AIME (nine model-family units)
 
-Adding the twelve AIME combos (12 AIME + 7 MATH/GSM8K = 19). AIME has near-zero oracle gap
-and clusters at the extremes of solvability, so it pulls every number toward $0$ **and**
-shrinks the $R_1$–$R_2$ offset from ~0.044 to ~0.019 (much of the "headroom" simply isn't
-there on AIME). Treat this as a diluted, optimistic view; the discriminating signal lives in
-the MATH/GSM8K subset of §2–§5.
+Adding the **aime** family (one unit per model, the `aime2023–2026` mean) to §5's six units
+gives nine equal-weight model-family units (six gsm8k+math + three aime: Phi-4, Qwen2.5,
+Qwen3-4B). AIME has near-zero oracle gap and clusters at the extremes of solvability, so it
+pulls every number toward $0$ **and** shrinks the $R_1$–$R_2$ offset from ~0.037 to ~0.027.
+Because the family scheme caps AIME at **3 of 9 units (33%)** — rather than the 12-of-19
+(63%) it would get under a raw per-combo average — this dilution is **milder** than a naive
+pooled mean. Still treat the high-dispersion gsm8k+math subset of §2–§5 as the discriminating
+signal.
 
 **Mean $R_1$ / (mean $R_2$)**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.0546 (0.0341) | 0.0560 (0.0363) | 0.0563 (0.0372) | 0.0564 (0.0381) |
-| Fixed $T{=}1.0$ | 0.0432 (0.0226) | 0.0434 (0.0236) | 0.0431 (0.0240) | 0.0426 (0.0242) |
-| Random-$T$ | 0.0420 (0.0215) | 0.0422 (0.0225) | 0.0421 (0.0230) | 0.0421 (0.0238) |
-| **Pool** | 0.0343 (0.0138) | 0.0343 (0.0146) | 0.0347 (0.0156) | 0.0345 (0.0162) |
-| **Consensus** | 0.0383 (0.0177) | 0.0355 (0.0158) | **0.0338** (0.0147) | **0.0326** (0.0143) |
+| Fixed $T{=}0.1$ | 0.0674 (0.0402) | 0.0690 (0.0422) | 0.0698 (0.0433) | 0.0702 (0.0442) |
+| Fixed $T{=}1.0$ | 0.0439 (0.0167) | 0.0441 (0.0173) | 0.0441 (0.0176) | 0.0439 (0.0179) |
+| Random-$T$ | 0.0498 (0.0226) | 0.0503 (0.0235) | 0.0504 (0.0239) | 0.0505 (0.0245) |
+| **Pool** | 0.0401 (0.0129) | 0.0401 (0.0133) | 0.0406 (0.0141) | 0.0407 (0.0146) |
+| **Consensus** | 0.0426 (0.0154) | 0.0399 (0.0131) | **0.0383** (0.0118) | **0.0370** (0.0110) |
 
 **$\mathrm{p95}\,R_1$ / (p95 $R_2$)**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.397 (0.325) | 0.418 (0.336) | 0.424 (0.345) | 0.425 (0.356) |
-| Fixed $T{=}1.0$ | 0.288 (0.199) | 0.307 (0.209) | 0.317 (0.213) | 0.322 (0.220) |
-| Random-$T$ | 0.249 (0.160) | 0.256 (0.168) | 0.262 (0.170) | 0.269 (0.175) |
-| **Pool** | 0.215 (0.094) | 0.226 (0.085) | 0.234 (0.079) | 0.240 (0.069) |
-| **Consensus** | 0.259 (0.137) | 0.237 (0.106) | **0.219** (0.083) | **0.214** (0.071) |
+| Fixed $T{=}0.1$ | 0.579 (0.477) | 0.631 (0.512) | 0.665 (0.546) | 0.684 (0.578) |
+| Fixed $T{=}1.0$ | 0.290 (0.162) | 0.312 (0.171) | 0.325 (0.171) | 0.333 (0.181) |
+| Random-$T$ | 0.293 (0.169) | 0.305 (0.179) | 0.318 (0.184) | 0.327 (0.189) |
+| **Pool** | 0.258 (0.098) | 0.282 (0.083) | 0.290 (0.070) | 0.298 (0.053) |
+| **Consensus** | 0.300 (0.141) | 0.279 (0.098) | **0.257** (0.069) | **0.248** (0.051) |
 
 **$\Pr[R_1>0.1]$ / ($\Pr[R_2>0.1]$)**
 
 | strategy | $N{=}64$ | $N{=}128$ | $N{=}256$ | $N{=}512$ |
 |---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.102 (0.076) | 0.093 (0.073) | 0.083 (0.067) | 0.074 (0.061) |
-| Fixed $T{=}1.0$ | 0.094 (0.067) | 0.085 (0.055) | 0.078 (0.052) | 0.063 (0.044) |
-| Random-$T$ | 0.129 (0.084) | 0.121 (0.084) | 0.110 (0.079) | 0.101 (0.076) |
-| **Pool** | 0.095 (0.054) | 0.081 (0.048) | **0.067** (0.037) | **0.055** (0.033) |
-| **Consensus** | 0.099 (0.065) | 0.085 (0.047) | 0.070 (0.039) | 0.058 (0.035) |
+| Fixed $T{=}0.1$ | 0.116 (0.090) | 0.106 (0.085) | 0.097 (0.078) | 0.089 (0.072) |
+| Fixed $T{=}1.0$ | 0.093 (0.057) | 0.084 (0.047) | 0.076 (0.044) | 0.065 (0.039) |
+| Random-$T$ | 0.150 (0.094) | 0.141 (0.093) | 0.130 (0.090) | 0.123 (0.088) |
+| **Pool** | 0.102 (0.054) | 0.087 (0.047) | **0.074** (0.038) | **0.063** (0.034) |
+| **Consensus** | 0.105 (0.063) | 0.090 (0.046) | 0.077 (0.039) | 0.065 (0.034) |
 
 The conclusions are directionally unchanged but **muted**: Pool/Consensus remain the
 lowest-regret strategies on the mean and on the $R_2$ tail, Consensus still overtakes Pool
-by $N{=}128$, and the $R_1$ tail still fails to collapse (Pool rises 0.215→0.240; Consensus
-flat ~0.21). The single notable reshuffle from dilution: on the integrated **$R_1$ tail**,
-Random-$T$ now sits between $T{=}1.0$ and Pool (AIME's low-variance, near-zero-gap problems
-flatter Random-$T$), whereas on the MATH/GSM8K subset Random-$T$ is among the worst. This is
-why the paper-grade claims are stated on the high-dispersion subset, not the pooled average.
+by $N{=}128$, and the $R_1$ tail still fails to collapse (Pool rises 0.258→0.298; Consensus
+flat/falling ~0.30→0.25). The notable reshuffle from dilution: on the integrated **$R_1$ tail**,
+Random-$T$ rises to sit alongside $T{=}1.0$ (~0.33 at $N{=}512$), whereas on the gsm8k+math
+subset (§5) Random-$T$ has the *worst* $R_1$ tail (0.405). This is why the paper-grade claims
+are stated on the high-dispersion subset, not the pooled average.
 
 ---
 
