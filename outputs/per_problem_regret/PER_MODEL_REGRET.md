@@ -1,19 +1,23 @@
-# Per-Model Regret by Budget $N$ — mean, p95 tail, and $\Pr[R>0.1]$
+# Per-Model Regret by Budget $N$ — mean, std, p95 tail, and $\Pr[R>0.1]$
 
 Per-problem regret, **averaged per model over the datasets that model covers**, as a
-function of the sampling budget $N$, reported with three complementary statistics
+function of the sampling budget $N$, reported with four complementary statistics
 (see `SYNTHESIS_R1.md` §7):
 
 - **mean** — expected accuracy given up (central tendency; dilutes tail risk).
-- **p95** — 95th-percentile regret (threshold-free tail / worst-case risk).
-- **$\Pr[R>0.1]$** — fraction of problems losing >10 pp (interpretable but the 0.1 cutoff
-  is arbitrary; use as secondary).
+- **std** — across-problem standard deviation (dispersion / *stability*: a stable strategy's
+  std shrinks toward 0 as $N$ grows).
+- **p95** — 95th-percentile regret (threshold-free tail; can read 0 once <5% of problems are
+  bad, hiding a thin residual hard core).
+- **$\Pr[R>0.1]$** — fraction of problems losing >10 pp (interpretable but the 0.1 cutoff is
+  arbitrary; use as secondary; catches the residual hard core p95 can miss).
 
 Two regret kinds (`SYNTHESIS_R1.md` §0–1): $R_1=a^\*(p)-a(p,s)$ vs. the per-problem oracle
 (unattainable ceiling); $R_2=a(p,T^\dagger)-a(p,s)$ vs. the best fixed temperature
 (operational regret). Each cell is the **unweighted mean over that model's datasets** in the
-grouping. Strategies: Fixed $T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature Pool
-(`equal_mix`), Temperature Consensus (`consensus_vote`).
+grouping (so std is the *mean of per-dataset stds*, not a pooled std). Strategies: Fixed
+$T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature Pool (`equal_mix`), Temperature Consensus
+(`consensus_vote`).
 
 ### Dataset coverage per model
 
@@ -79,6 +83,54 @@ grouping. Strategies: Fixed $T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature 
 | Qwen3-4B-Instruct-2507 | Random-T | 0.0148 | 0.0197 | 0.0223 | 0.0244 | 0.0267 | 0.0281 | 0.0286 |
 | Qwen3-4B-Instruct-2507 | Pool | 0.0127 | 0.0178 | 0.0212 | 0.0239 | 0.0258 | 0.0266 | 0.0261 |
 | Qwen3-4B-Instruct-2507 | Consensus | 0.0127 | 0.0292 | 0.0269 | 0.0263 | 0.0275 | 0.0280 | 0.0276 |
+
+### R1 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Llama-3.2-3B | T=0.1 | 0.1854 | 0.2591 | 0.2734 | 0.2839 | 0.2919 | 0.2975 | 0.3016 |
+| Llama-3.2-3B | T=1.0 | 0.1304 | 0.1510 | 0.1627 | 0.1745 | 0.1846 | 0.1925 | 0.1985 |
+| Llama-3.2-3B | Random-T | 0.1075 | 0.1403 | 0.1502 | 0.1588 | 0.1659 | 0.1711 | 0.1747 |
+| Llama-3.2-3B | Pool | 0.1054 | 0.1577 | 0.1743 | 0.1922 | 0.2049 | 0.2145 | 0.2210 |
+| Llama-3.2-3B | Consensus | 0.1054 | 0.1596 | 0.1628 | 0.1692 | 0.1761 | 0.1823 | 0.1877 |
+| Phi-4-mini-instruct | T=0.1 | 0.0885 | 0.1309 | 0.1425 | 0.1496 | 0.1533 | 0.1552 | 0.1566 |
+| Phi-4-mini-instruct | T=1.0 | 0.0997 | 0.1206 | 0.1272 | 0.1312 | 0.1341 | 0.1364 | 0.1396 |
+| Phi-4-mini-instruct | Random-T | 0.0671 | 0.0868 | 0.0908 | 0.0931 | 0.0956 | 0.0970 | 0.0972 |
+| Phi-4-mini-instruct | Pool | 0.0529 | 0.0963 | 0.1022 | 0.1062 | 0.1069 | 0.1067 | 0.1051 |
+| Phi-4-mini-instruct | Consensus | 0.0529 | 0.1070 | 0.1050 | 0.1017 | 0.0962 | 0.0928 | 0.0914 |
+| Qwen2.5-3B | T=0.1 | 0.1049 | 0.1541 | 0.1607 | 0.1667 | 0.1721 | 0.1766 | 0.1798 |
+| Qwen2.5-3B | T=1.0 | 0.1195 | 0.1541 | 0.1615 | 0.1668 | 0.1709 | 0.1757 | 0.1803 |
+| Qwen2.5-3B | Random-T | 0.0841 | 0.1049 | 0.1103 | 0.1141 | 0.1182 | 0.1206 | 0.1235 |
+| Qwen2.5-3B | Pool | 0.0683 | 0.1013 | 0.1121 | 0.1237 | 0.1336 | 0.1411 | 0.1459 |
+| Qwen2.5-3B | Consensus | 0.0683 | 0.1056 | 0.1078 | 0.1159 | 0.1246 | 0.1301 | 0.1328 |
+| Qwen3-4B-Instruct-2507 | T=0.1 | 0.0974 | 0.1535 | 0.1695 | 0.1776 | 0.1850 | 0.1908 | 0.1954 |
+| Qwen3-4B-Instruct-2507 | T=1.0 | 0.0530 | 0.0850 | 0.0892 | 0.0896 | 0.0870 | 0.0846 | 0.0817 |
+| Qwen3-4B-Instruct-2507 | Random-T | 0.0515 | 0.0852 | 0.0949 | 0.1008 | 0.1039 | 0.1055 | 0.1060 |
+| Qwen3-4B-Instruct-2507 | Pool | 0.0552 | 0.0835 | 0.0931 | 0.0998 | 0.1012 | 0.0983 | 0.0919 |
+| Qwen3-4B-Instruct-2507 | Consensus | 0.0552 | 0.1171 | 0.1103 | 0.1079 | 0.1061 | 0.1021 | 0.0964 |
+
+### R2 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Llama-3.2-3B | T=0.1 | 0.2033 | 0.2687 | 0.2823 | 0.2931 | 0.3016 | 0.3080 | 0.3127 |
+| Llama-3.2-3B | T=1.0 | 0.0673 | 0.0914 | 0.1052 | 0.1188 | 0.1306 | 0.1404 | 0.1482 |
+| Llama-3.2-3B | Random-T | 0.0617 | 0.0925 | 0.1014 | 0.1094 | 0.1162 | 0.1222 | 0.1269 |
+| Llama-3.2-3B | Pool | 0.0848 | 0.1159 | 0.1274 | 0.1444 | 0.1562 | 0.1662 | 0.1729 |
+| Llama-3.2-3B | Consensus | 0.0848 | 0.1230 | 0.1144 | 0.1125 | 0.1133 | 0.1159 | 0.1189 |
+| Phi-4-mini-instruct | T=0.1 | 0.0889 | 0.1329 | 0.1455 | 0.1526 | 0.1562 | 0.1586 | 0.1618 |
+| Phi-4-mini-instruct | T=1.0 | 0.0837 | 0.0902 | 0.0975 | 0.1143 | 0.1213 | 0.1237 | 0.1229 |
+| Phi-4-mini-instruct | Random-T | 0.0508 | 0.0684 | 0.0730 | 0.0737 | 0.0788 | 0.0804 | 0.0822 |
+| Phi-4-mini-instruct | Pool | 0.0353 | 0.0732 | 0.0786 | 0.0792 | 0.0822 | 0.0828 | 0.0850 |
+| Phi-4-mini-instruct | Consensus | 0.0353 | 0.0851 | 0.0806 | 0.0713 | 0.0696 | 0.0662 | 0.0684 |
+| Qwen2.5-3B | T=0.1 | 0.0996 | 0.1555 | 0.1650 | 0.1718 | 0.1768 | 0.1820 | 0.1854 |
+| Qwen2.5-3B | T=1.0 | 0.0980 | 0.1199 | 0.1248 | 0.1307 | 0.1388 | 0.1505 | 0.1558 |
+| Qwen2.5-3B | Random-T | 0.0600 | 0.0740 | 0.0804 | 0.0838 | 0.0883 | 0.0908 | 0.0944 |
+| Qwen2.5-3B | Pool | 0.0467 | 0.0679 | 0.0777 | 0.0891 | 0.0976 | 0.1050 | 0.1107 |
+| Qwen2.5-3B | Consensus | 0.0467 | 0.0806 | 0.0766 | 0.0795 | 0.0833 | 0.0851 | 0.0861 |
+| Qwen3-4B-Instruct-2507 | T=0.1 | 0.0939 | 0.1488 | 0.1659 | 0.1745 | 0.1831 | 0.1901 | 0.1952 |
+| Qwen3-4B-Instruct-2507 | T=1.0 | 0.0305 | 0.0712 | 0.0772 | 0.0791 | 0.0808 | 0.0820 | 0.0810 |
+| Qwen3-4B-Instruct-2507 | Random-T | 0.0395 | 0.0751 | 0.0860 | 0.0923 | 0.0988 | 0.1033 | 0.1055 |
+| Qwen3-4B-Instruct-2507 | Pool | 0.0476 | 0.0721 | 0.0822 | 0.0897 | 0.0951 | 0.0957 | 0.0912 |
+| Qwen3-4B-Instruct-2507 | Consensus | 0.0476 | 0.1039 | 0.0993 | 0.0980 | 0.1000 | 0.0996 | 0.0957 |
 
 ### R1 — p95
 | model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
@@ -219,6 +271,44 @@ grouping. Strategies: Fixed $T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature 
 | Qwen2.5-3B | Pool | 0.0023 | 0.0062 | 0.0057 | 0.0057 | 0.0054 | 0.0053 | 0.0053 |
 | Qwen2.5-3B | Consensus | 0.0023 | 0.0100 | 0.0076 | 0.0060 | 0.0049 | 0.0039 | 0.0032 |
 
+### R1 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Llama-3.2-3B | T=0.1 | 0.1854 | 0.2591 | 0.2734 | 0.2839 | 0.2919 | 0.2975 | 0.3016 |
+| Llama-3.2-3B | T=1.0 | 0.1304 | 0.1510 | 0.1627 | 0.1745 | 0.1846 | 0.1925 | 0.1985 |
+| Llama-3.2-3B | Random-T | 0.1075 | 0.1403 | 0.1502 | 0.1588 | 0.1659 | 0.1711 | 0.1747 |
+| Llama-3.2-3B | Pool | 0.1054 | 0.1577 | 0.1743 | 0.1922 | 0.2049 | 0.2145 | 0.2210 |
+| Llama-3.2-3B | Consensus | 0.1054 | 0.1596 | 0.1628 | 0.1692 | 0.1761 | 0.1823 | 0.1877 |
+| Phi-4-mini-instruct | T=0.1 | 0.1770 | 0.2337 | 0.2453 | 0.2542 | 0.2613 | 0.2663 | 0.2697 |
+| Phi-4-mini-instruct | T=1.0 | 0.1546 | 0.1797 | 0.1892 | 0.1972 | 0.2036 | 0.2087 | 0.2129 |
+| Phi-4-mini-instruct | Random-T | 0.1092 | 0.1361 | 0.1434 | 0.1490 | 0.1534 | 0.1563 | 0.1590 |
+| Phi-4-mini-instruct | Pool | 0.1107 | 0.1572 | 0.1697 | 0.1813 | 0.1897 | 0.1966 | 0.2014 |
+| Phi-4-mini-instruct | Consensus | 0.1107 | 0.1590 | 0.1605 | 0.1651 | 0.1697 | 0.1738 | 0.1772 |
+| Qwen2.5-3B | T=0.1 | 0.1752 | 0.2474 | 0.2616 | 0.2722 | 0.2802 | 0.2861 | 0.2902 |
+| Qwen2.5-3B | T=1.0 | 0.1414 | 0.1719 | 0.1829 | 0.1929 | 0.2012 | 0.2076 | 0.2128 |
+| Qwen2.5-3B | Random-T | 0.1038 | 0.1385 | 0.1487 | 0.1571 | 0.1639 | 0.1687 | 0.1725 |
+| Qwen2.5-3B | Pool | 0.1007 | 0.1525 | 0.1686 | 0.1830 | 0.1945 | 0.2038 | 0.2108 |
+| Qwen2.5-3B | Consensus | 0.1007 | 0.1586 | 0.1664 | 0.1761 | 0.1850 | 0.1920 | 0.1979 |
+
+### R2 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Llama-3.2-3B | T=0.1 | 0.2033 | 0.2687 | 0.2823 | 0.2931 | 0.3016 | 0.3080 | 0.3127 |
+| Llama-3.2-3B | T=1.0 | 0.0673 | 0.0914 | 0.1052 | 0.1188 | 0.1306 | 0.1404 | 0.1482 |
+| Llama-3.2-3B | Random-T | 0.0617 | 0.0925 | 0.1014 | 0.1094 | 0.1162 | 0.1222 | 0.1269 |
+| Llama-3.2-3B | Pool | 0.0848 | 0.1159 | 0.1274 | 0.1444 | 0.1562 | 0.1662 | 0.1729 |
+| Llama-3.2-3B | Consensus | 0.0848 | 0.1230 | 0.1144 | 0.1125 | 0.1133 | 0.1159 | 0.1189 |
+| Phi-4-mini-instruct | T=0.1 | 0.1836 | 0.2503 | 0.2620 | 0.2655 | 0.2703 | 0.2766 | 0.2850 |
+| Phi-4-mini-instruct | T=1.0 | 0.1186 | 0.0985 | 0.1068 | 0.1486 | 0.1652 | 0.1706 | 0.1626 |
+| Phi-4-mini-instruct | Random-T | 0.0732 | 0.0915 | 0.0972 | 0.0930 | 0.1033 | 0.1064 | 0.1140 |
+| Phi-4-mini-instruct | Pool | 0.0692 | 0.0986 | 0.1057 | 0.1025 | 0.1155 | 0.1249 | 0.1410 |
+| Phi-4-mini-instruct | Consensus | 0.0692 | 0.1053 | 0.0948 | 0.0765 | 0.0902 | 0.0939 | 0.1081 |
+| Qwen2.5-3B | T=0.1 | 0.1874 | 0.2631 | 0.2771 | 0.2875 | 0.2938 | 0.3000 | 0.3043 |
+| Qwen2.5-3B | T=1.0 | 0.0970 | 0.1037 | 0.1059 | 0.1163 | 0.1317 | 0.1522 | 0.1585 |
+| Qwen2.5-3B | Random-T | 0.0518 | 0.0757 | 0.0856 | 0.0922 | 0.0992 | 0.1028 | 0.1071 |
+| Qwen2.5-3B | Pool | 0.0534 | 0.0873 | 0.0959 | 0.1072 | 0.1146 | 0.1225 | 0.1303 |
+| Qwen2.5-3B | Consensus | 0.0534 | 0.1092 | 0.0988 | 0.0939 | 0.0914 | 0.0898 | 0.0914 |
+
 ### R1 — p95
 | model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
 |---|---|---|---|---|---|---|---|---|
@@ -338,6 +428,44 @@ grouping. Strategies: Fixed $T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature 
 | Qwen3-4B-Instruct-2507 | Pool | 0.0127 | 0.0178 | 0.0212 | 0.0239 | 0.0258 | 0.0266 | 0.0261 |
 | Qwen3-4B-Instruct-2507 | Consensus | 0.0127 | 0.0292 | 0.0269 | 0.0263 | 0.0275 | 0.0280 | 0.0276 |
 
+### R1 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Phi-4-mini-instruct | T=0.1 | 0.0443 | 0.0795 | 0.0911 | 0.0973 | 0.0993 | 0.0996 | 0.1001 |
+| Phi-4-mini-instruct | T=1.0 | 0.0722 | 0.0910 | 0.0963 | 0.0982 | 0.0994 | 0.1002 | 0.1030 |
+| Phi-4-mini-instruct | Random-T | 0.0460 | 0.0621 | 0.0646 | 0.0652 | 0.0666 | 0.0673 | 0.0663 |
+| Phi-4-mini-instruct | Pool | 0.0239 | 0.0659 | 0.0684 | 0.0686 | 0.0655 | 0.0618 | 0.0570 |
+| Phi-4-mini-instruct | Consensus | 0.0239 | 0.0810 | 0.0773 | 0.0699 | 0.0595 | 0.0523 | 0.0485 |
+| Qwen2.5-3B | T=0.1 | 0.0523 | 0.0841 | 0.0850 | 0.0875 | 0.0910 | 0.0944 | 0.0970 |
+| Qwen2.5-3B | T=1.0 | 0.1031 | 0.1407 | 0.1455 | 0.1472 | 0.1482 | 0.1518 | 0.1559 |
+| Qwen2.5-3B | Random-T | 0.0693 | 0.0796 | 0.0815 | 0.0819 | 0.0840 | 0.0845 | 0.0867 |
+| Qwen2.5-3B | Pool | 0.0440 | 0.0630 | 0.0698 | 0.0793 | 0.0879 | 0.0942 | 0.0972 |
+| Qwen2.5-3B | Consensus | 0.0440 | 0.0659 | 0.0639 | 0.0708 | 0.0793 | 0.0837 | 0.0839 |
+| Qwen3-4B-Instruct-2507 | T=0.1 | 0.0974 | 0.1535 | 0.1695 | 0.1776 | 0.1850 | 0.1908 | 0.1954 |
+| Qwen3-4B-Instruct-2507 | T=1.0 | 0.0530 | 0.0850 | 0.0892 | 0.0896 | 0.0870 | 0.0846 | 0.0817 |
+| Qwen3-4B-Instruct-2507 | Random-T | 0.0515 | 0.0852 | 0.0949 | 0.1008 | 0.1039 | 0.1055 | 0.1060 |
+| Qwen3-4B-Instruct-2507 | Pool | 0.0552 | 0.0835 | 0.0931 | 0.0998 | 0.1012 | 0.0983 | 0.0919 |
+| Qwen3-4B-Instruct-2507 | Consensus | 0.0552 | 0.1171 | 0.1103 | 0.1079 | 0.1061 | 0.1021 | 0.0964 |
+
+### R2 — std
+| model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
+|---|---|---|---|---|---|---|---|---|
+| Phi-4-mini-instruct | T=0.1 | 0.0415 | 0.0742 | 0.0873 | 0.0961 | 0.0992 | 0.0996 | 0.1001 |
+| Phi-4-mini-instruct | T=1.0 | 0.0663 | 0.0861 | 0.0929 | 0.0971 | 0.0993 | 0.1003 | 0.1030 |
+| Phi-4-mini-instruct | Random-T | 0.0396 | 0.0569 | 0.0610 | 0.0640 | 0.0665 | 0.0674 | 0.0663 |
+| Phi-4-mini-instruct | Pool | 0.0184 | 0.0605 | 0.0651 | 0.0676 | 0.0655 | 0.0618 | 0.0570 |
+| Phi-4-mini-instruct | Consensus | 0.0184 | 0.0750 | 0.0735 | 0.0688 | 0.0594 | 0.0524 | 0.0485 |
+| Qwen2.5-3B | T=0.1 | 0.0338 | 0.0749 | 0.0810 | 0.0850 | 0.0891 | 0.0934 | 0.0963 |
+| Qwen2.5-3B | T=1.0 | 0.0988 | 0.1320 | 0.1390 | 0.1415 | 0.1441 | 0.1493 | 0.1539 |
+| Qwen2.5-3B | Random-T | 0.0661 | 0.0728 | 0.0765 | 0.0775 | 0.0801 | 0.0818 | 0.0849 |
+| Qwen2.5-3B | Pool | 0.0417 | 0.0533 | 0.0641 | 0.0755 | 0.0848 | 0.0920 | 0.0960 |
+| Qwen2.5-3B | Consensus | 0.0417 | 0.0591 | 0.0599 | 0.0688 | 0.0772 | 0.0816 | 0.0822 |
+| Qwen3-4B-Instruct-2507 | T=0.1 | 0.0939 | 0.1488 | 0.1659 | 0.1745 | 0.1831 | 0.1901 | 0.1952 |
+| Qwen3-4B-Instruct-2507 | T=1.0 | 0.0305 | 0.0712 | 0.0772 | 0.0791 | 0.0808 | 0.0820 | 0.0810 |
+| Qwen3-4B-Instruct-2507 | Random-T | 0.0395 | 0.0751 | 0.0860 | 0.0923 | 0.0988 | 0.1033 | 0.1055 |
+| Qwen3-4B-Instruct-2507 | Pool | 0.0476 | 0.0721 | 0.0822 | 0.0897 | 0.0951 | 0.0957 | 0.0912 |
+| Qwen3-4B-Instruct-2507 | Consensus | 0.0476 | 0.1039 | 0.0993 | 0.0980 | 0.1000 | 0.0996 | 0.0957 |
+
 ### R1 — p95
 | model | strategy | N=8 | N=64 | N=128 | N=256 | N=512 | N=1024 | N=2048 |
 |---|---|---|---|---|---|---|---|---|
@@ -419,13 +547,16 @@ grouping. Strategies: Fixed $T{=}0.1$, Fixed $T{=}1.0$, Random-$T$, Temperature 
 
 ## Notes
 
+- **Stability.** The cleanest stability signature is **std (or p95) shrinking monotonically
+  toward 0 as $N$ grows**; see `SYNTHESIS_R1.md` §7. std captures the whole dispersion, p95
+  the tail magnitude, and $\Pr[>0.1]$ a residual hard core — read them together.
 - **$R_1 = R_2 + \Delta_{\text{oracle}}$ on the *mean* only.** The mean shift is
-  strategy-independent, so mean-$R_1$ and mean-$R_2$ share the strategy ordering. The **p95
-  and $\Pr[>0.1]$ tables do *not* differ by a constant** — $\Delta_{\text{oracle}}(p)$ is
-  per-problem, so the tail shape genuinely changes between $R_1$ and $R_2$ (e.g. $R_2$ p95 of
-  Pool/Consensus collapses toward 0 at large $N$, while $R_1$ p95 stays elevated — the
-  unreachable oracle gap, not avoidable regret; see `SYNTHESIS_R1.md` §0, §3).
+  strategy-independent. The **std / p95 / $\Pr[>0.1]$ tables do *not* differ by a constant**
+  between $R_1$ and $R_2$ — $\Delta_{\text{oracle}}(p)$ is per-problem, so dispersion and tail
+  shape genuinely change (e.g. $R_2$ std/p95 of Pool/Consensus collapse toward 0 at large
+  $N$, while $R_1$ stay elevated — the unreachable oracle gap, not avoidable regret; see
+  `SYNTHESIS_R1.md` §0, §3).
 - **AIME tails are quantized** (22–30 problems/year): $\Pr[>0.1]$ moves in coarse steps and
-  p95 is noisy. Read AIME tail numbers as indicative only.
+  p95/std are noisy. Read AIME tail numbers as indicative only.
 - **Source.** `summary_distribution_stats.csv`, unweighted mean over each model's datasets.
   $R_1$ carries a ~1 pp upward oracle bias.
