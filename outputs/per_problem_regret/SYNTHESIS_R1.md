@@ -265,7 +265,36 @@ why the paper-grade claims are stated on the high-dispersion subset, not the poo
 
 ---
 
-## 7. Caveats specific to $R_1$
+## 7. Reporting guidance: report the mean *and* a tail measure
+
+Regret is a per-problem **distribution**, and its mean and its tail answer different
+questions — reporting only one misrepresents the result.
+
+- **Mean regret** is the first moment: "on average, how much accuracy do I give up?" It
+  averages the many easy problems (regret $\approx0$) together with the few catastrophic
+  ones, so it **dilutes tail risk**. Two strategies with equal means can have very different
+  worst-case behavior.
+- **Tail measures** — $\mathrm{p95}$ (threshold-free) or $\Pr[R>\tau]$ (exceedance) — answer
+  "how often, and how badly, do I get burned?" This is the risk a per-problem deployment
+  actually faces, since queries are solved one at a time.
+
+Why this matters here specifically: the value of temperature mixing is **risk reduction, not
+higher average accuracy**. On the mean, mixing does *not* win — mean $R_2$ for Pool/Consensus
+is small but positive (they slightly trail the best fixed temperature). The benefit appears
+only in the tail: at $N{=}2048$, $\Pr[R_2>0.1]$ falls to ~2.7–2.9% for mixing versus ~9–11%
+for a single fixed/random temperature — a catastrophic-loss rate of ~1-in-35 vs ~1-in-10.
+Reporting the mean alone would make mixing look like a slight loss and miss its entire point.
+
+Recommended default: **report mean (expected cost) alongside $\mathrm{p95}$ or the regret
+CDF (risk).** Use $\Pr[R>0.1]$ as a secondary, interpretable statistic ("how often a problem
+loses >10 pp"), but never as the sole headline — its $0.1$ cutoff is an arbitrary reporting
+choice (sweeping $\tau\in\{0.05,0.1,0.15,0.2\}$ leaves the strategy *ranking* unchanged, but
+the absolute rates — especially Random-$T$'s — shift with $\tau$). For $R_1$ in particular (§0), even the tail is partly the unavoidable
+oracle gap, so a $R_1$ tail number must be read as a ceiling, not an avoidable risk.
+
+---
+
+## 8. Caveats specific to $R_1$
 
 - **Oracle bias.** $a^\*$ is a max over noisy per-temperature estimates and is $\sim$1 pp
   upward biased, so every $R_1$ number above is slightly inflated in absolute terms. This
