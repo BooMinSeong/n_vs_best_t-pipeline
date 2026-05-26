@@ -2,12 +2,14 @@
 
 *Companion to `SYNTHESIS.md`, which focuses on $R_2$ (regret vs. the best deployable
 fixed temperature). Here we re-run the same comparison against the **per-problem oracle**
-ceiling $R_1$, averaging over the same seven MATH/GSM8K combos. The question: does the
+ceiling $R_1$, aggregated over the same dataset families. The question: does the
 "mixing is regret-stable" story hold when the baseline is the unattainable per-problem
 best temperature instead of the best single fixed one?*
 
-Seven combos: gsm8kfull/{Qwen2.5-3B, Llama-3.2-3B, Phi-4-mini}, math1k/Qwen2.5-3B,
-math500/Phi-4-mini, mathfull/{Qwen2.5-3B, Llama-3.2-3B}.
+Aggregation unit (same family scheme as `PER_MODEL_REGRET.md`): the **six gsm8k+math
+model-family units** — gsm8k = `gsm8kfull` for {Qwen2.5-3B, Llama-3.2-3B, Phi-4-mini};
+math = `mathfull` (Qwen2.5-3B, Llama-3.2-3B) or `math500` (Phi-4-mini), treated as one MATH
+family with `math1k` excluded. §6 adds the aime family. Equal weight per unit.
 
 ---
 
@@ -63,32 +65,36 @@ This single fact drives everything below:
   *per-problem* shift, heaviest on hard problems. So the **shape** of the $R_1$
   distribution — its tail in particular — is genuinely different from $R_2$'s.
 
-In short: **$R_1$ leaves the means/rankings of §3 unchanged but rewrites the tail story of
-§4.**
+In short: **$R_1$ leaves the means/rankings of §2 unchanged but rewrites the tail story of
+§3.**
 
 ---
 
 ## 2. Mean $R_1$: same ranking as $R_2$, lifted by a near-constant oracle gap
 
-Mean over the seven combos:
+Mean over the six gsm8k+math model-family units (gsm8k = `gsm8kfull`; math =
+`mathfull`/`math500`, `math1k` excluded; equal weight):
 
 | strategy | $\bar R_1$ @8 | @64 | @256 | @1024 | @2048 |
 |---|---|---|---|---|---|
-| Fixed $T{=}0.1$ | 0.0777 | 0.0957 | 0.0997 | 0.1012 | **0.1015** |
-| Fixed $T{=}1.0$ | 0.0698 | 0.0585 | 0.0584 | 0.0585 | 0.0586 |
-| Random-$T$ | 0.0689 | 0.0692 | 0.0703 | 0.0708 | 0.0709 |
-| **Temperature Pool** | 0.0499 | 0.0545 | 0.0554 | 0.0561 | 0.0563 |
-| **Temperature Consensus** | 0.0499 | 0.0564 | 0.0525 | 0.0506 | **0.0500** |
+| Fixed $T{=}0.1$ | 0.0699 | 0.0858 | 0.0892 | 0.0904 | **0.0907** |
+| Fixed $T{=}1.0$ | 0.0588 | 0.0487 | 0.0490 | 0.0495 | 0.0497 |
+| Random-$T$ | 0.0612 | 0.0617 | 0.0628 | 0.0631 | 0.0632 |
+| **Temperature Pool** | 0.0446 | 0.0489 | 0.0497 | 0.0502 | 0.0504 |
+| **Temperature Consensus** | 0.0446 | 0.0501 | 0.0459 | 0.0439 | **0.0432** |
 
 The corresponding $\bar R_2$ table (`SYNTHESIS.md` §3 currency) is **this table minus a
-near-constant offset** $\overline{\Delta_{\text{oracle}}}\approx0.044$ that is the same for
-every strategy (N=8: 0.046; N≥64: 0.044). Concretely at $N{=}2048$, $\bar R_2$ = Consensus
-0.0059, Pool 0.0121, $T{=}1.0$ 0.0144, Random 0.0267, $T{=}0.1$ 0.0573.
+near-constant offset** $\overline{\Delta_{\text{oracle}}}\approx0.037$ that is the same for
+every strategy (N=8: 0.040; N≥64: 0.037). Concretely at $N{=}2048$, $\bar R_2$ = Consensus
+0.0062, $T{=}1.0$ 0.0127, Pool 0.0134, Random 0.0262, $T{=}0.1$ 0.0537.
 
-So the **mean ranking is preserved**: Consensus < Pool < $T{=}1.0$ < Random-$T$ < $T{=}0.1$
-at scale, with Consensus the lowest-regret deployable strategy ($0.0500$ vs Pool $0.0563$).
-Reading $R_1$ instead of $R_2$ changes no ordering and no significance — it only inflates
-every number by the (slightly bias-inflated, §5) oracle gap.
+So the **mean ranking is preserved between $R_1$ and $R_2$** (they differ only by the common
+offset): at scale **Consensus is the lowest-regret deployable strategy** ($\bar R_1\,0.0432$),
+while $T{=}1.0$ and Pool are essentially tied for second ($0.0497$ vs $0.0504$ — a swap from
+the earlier 7-combo basis, where `math1k` had penalized $T{=}1.0$). Reading $R_1$ instead of
+$R_2$ changes no ordering and no significance — it only inflates every number by the (slightly
+bias-inflated, §8) oracle gap. Note the mean alone does *not* separate mixing from a good
+fixed temperature; that separation is a tail property (§3, §7).
 
 ---
 
@@ -100,13 +106,13 @@ converges onto the best fixed temperature. Under $R_1$ that collapse disappears:
 
 | strategy | $\mathrm{p95}\,R_1$ @8 | @2048 | $\mathrm{p95}\,R_2$ @2048 |
 |---|---|---|---|
-| Fixed $T{=}0.1$ | 0.509 | **1.000** | 0.956 |
-| Fixed $T{=}1.0$ | 0.348 | 0.486 | 0.222 |
-| Random-$T$ | 0.276 | 0.458 | 0.232 |
-| **Temperature Pool** | 0.249 | 0.511 | **0.011** |
-| **Temperature Consensus** | 0.249 | **0.386** | **0.011** |
+| Fixed $T{=}0.1$ | 0.496 | **1.000** | 0.949 |
+| Fixed $T{=}1.0$ | 0.313 | 0.400 | 0.167 |
+| Random-$T$ | 0.265 | 0.422 | 0.220 |
+| **Temperature Pool** | 0.239 | 0.434 | **0.013** |
+| **Temperature Consensus** | 0.239 | **0.299** | **0.007** |
 
-The mixing tail stays heavy ($\mathrm{p95}\,R_1\approx0.39$–$0.51$ at $N{=}2048$) even as
+The mixing tail stays heavy ($\mathrm{p95}\,R_1\approx0.30$–$0.43$ at $N{=}2048$) even as
 $\mathrm{p95}\,R_2\to0$. The reason is exactly $\Delta_{\text{oracle}}(p)$: on the hard
 tail, the per-problem oracle rescues each problem with **its own idiosyncratic best
 temperature**, which a single mixing rule cannot match. **Under the §0 assumption this is
@@ -117,48 +123,50 @@ to the wrong mode on hard problems — a genuine, avoidable failure of that fixe
 
 A caution on reading the tail ranking. $\mathrm{p95}\,R_1$ is the 95th percentile of
 $\Delta_{\text{oracle}}(p)+R_2(p,s)$, a non-linear functional, so its ordering across
-strategies need **not** match the $R_2$ tail ordering — and indeed Consensus (0.386) sits
-below Pool (0.511) here, unlike their near-tie under $R_2$. But this gap is **diagnostic,
+strategies need **not** match the $R_2$ tail ordering — and indeed Consensus (0.299) sits
+below Pool (0.434) here, unlike their near-tie under $R_2$. But this gap is **diagnostic,
 not operational**: it says Consensus's residual errors land less often on the
 high-oracle-gap problems, not that Consensus recovers regret Pool leaves on the table.
 Since the oracle is unreachable by assumption, neither tail magnitude is an avoidable loss;
 only the §2 *mean* difference (which equals the $R_2$ ranking) should drive a deployment
 choice.
 
-Catastrophic-loss probability $\Pr[R_1>0.1]$ @ $N{=}2048$ (mean over the seven combos):
+Catastrophic-loss probability $\Pr[R_1>0.1]$ @ $N{=}2048$ (mean over the six gsm8k+math units):
 
 | strategy | $\Pr[R_1>0.1]$ | (cf. $\Pr[R_2>0.1]$) |
 |---|---|---|
-| Random-$T$ | **15.96%** | 10.9% |
-| Fixed $T{=}0.1$ | 11.46% | 9.0% |
-| Fixed $T{=}1.0$ | 7.39% | 3.7% |
-| **Temperature Consensus** | 7.44% | 2.7% |
-| **Temperature Pool** | **7.08%** | 2.9% |
+| Random-$T$ | **14.53%** | 10.25% |
+| Fixed $T{=}0.1$ | 10.27% | 8.19% |
+| **Temperature Consensus** | 6.52% | 2.53% |
+| **Temperature Pool** | 6.36% | 2.88% |
+| Fixed $T{=}1.0$ | **6.31%** | 3.16% |
 
 Against the per-problem oracle the catastrophic-loss rates compress: mixing still clearly
-beats Random-$T$ (~7% vs 16%), but its edge over a fixed $T{=}1.0$ (7.1–7.4% vs 7.4%)
-**vanishes** — because the extra ~4–7 pp of headroom that $R_1$ adds is the oracle gap that
-*no* deployable strategy can claw back, so it lands on mixing and $T{=}1.0$ alike.
+beats Random-$T$ (~6.4% vs 14.5%), but its edge over a fixed $T{=}1.0$ (6.3–6.5% vs 6.3%)
+**vanishes** — because the extra ~3–4 pp of headroom that $R_1$ adds is the oracle gap that
+*no* deployable strategy can claw back, so it lands on mixing and $T{=}1.0$ alike. (Under
+$R_2$, by contrast, mixing's ~2.5–2.9% clearly beats $T{=}1.0$'s 3.2%.)
 
 ---
 
-## 4. Per-combo mean $R_1$ @ $N{=}2048$
+## 4. Per-unit mean $R_1$ @ $N{=}2048$ (six gsm8k+math units)
 
-| dataset / model | $T{=}0.1$ | $T{=}1.0$ | Random-$T$ | **Pool** | **Consensus** |
+| family / model | $T{=}0.1$ | $T{=}1.0$ | Random-$T$ | **Pool** | **Consensus** |
 |---|---|---|---|---|---|
-| gsm8kfull / Qwen2.5-3B | 0.0634 | 0.0244 | 0.0330 | 0.0301 | 0.0278 |
-| gsm8kfull / Llama-3.2-3B | 0.1037 | 0.0295 | 0.0610 | 0.0473 | 0.0398 |
-| gsm8kfull / Phi-4-mini | 0.0622 | 0.0214 | 0.0333 | 0.0275 | 0.0236 |
-| math1k / Qwen2.5-3B | 0.1664 | 0.1119 | 0.1169 | 0.0916 | 0.0911 |
-| math500 / Phi-4-mini | 0.1110 | 0.0981 | 0.0939 | 0.0729 | 0.0641 |
-| mathfull / Qwen2.5-3B | 0.0886 | 0.0513 | 0.0592 | 0.0503 | 0.0470 |
-| mathfull / Llama-3.2-3B | 0.1152 | 0.0735 | 0.0988 | 0.0742 | 0.0566 |
+| gsm8k / Qwen2.5-3B | 0.0634 | **0.0244** | 0.0330 | 0.0301 | 0.0278 |
+| gsm8k / Llama-3.2-3B | 0.1037 | **0.0295** | 0.0610 | 0.0473 | 0.0398 |
+| gsm8k / Phi-4-mini | 0.0622 | **0.0214** | 0.0333 | 0.0275 | 0.0236 |
+| math / Qwen2.5-3B (mathfull) | 0.0886 | 0.0513 | 0.0592 | 0.0503 | **0.0470** |
+| math / Phi-4-mini (math500) | 0.1110 | 0.0981 | 0.0939 | 0.0729 | **0.0641** |
+| math / Llama-3.2-3B (mathfull) | 0.1152 | 0.0735 | 0.0988 | 0.0742 | **0.0566** |
 
 Same offset note as §2: each cell is the corresponding $R_2$ cell (`SYNTHESIS.md` §4) plus
-that combo's oracle gap $\Delta_{\text{oracle}}$. $T{=}1.0$ looks strong on GSM8K only
-because $T^\dagger\approx1.0$ there; on the MATH combos mixing leads, and **Consensus has
-the lowest mean $R_1$ on 6 of 7 combos** (Pool wins none outright; $T{=}1.0$ wins the three
-GSM8K cases where the fixed choice coincides with the oracle).
+that unit's oracle gap $\Delta_{\text{oracle}}$. The split is clean: **$T{=}1.0$ wins all
+three gsm8k units** (where $T^\dagger\approx1.0$ coincides with the oracle, so a single fixed
+temperature is already near-optimal), while **Consensus wins all three of the harder math
+units**. Pool wins none outright but trails Consensus closely. Mixing leads exactly where the
+per-problem optimal temperature is dispersed (the math family), which is where a fixed choice
+cannot serve both the easy bulk and the hard tail.
 
 ---
 
@@ -309,7 +317,7 @@ oracle gap, so a $R_1$ tail number must be read as a ceiling, not an avoidable r
   bounds.
 - **Why report $R_1$ at all (given §0).** Under the unknown-problem assumption $R_1$ is
   *not* an attainable regret — so it is not a ranking criterion. Its one value is as an
-  **upper bound**: the ~5 pp mean and heavy p95 tail separating the best deployable strategy
+  **upper bound**: the ~4 pp mean and heavy p95 tail separating the best deployable strategy
   (Consensus) from a clairvoyant per-problem selector is the most any *future* per-problem
   temperature *router* (one allowed to look at the problem) could ever win. It sizes the
   prize; it does not score the players.
